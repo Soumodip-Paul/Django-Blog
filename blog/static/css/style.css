@@ -18,6 +18,17 @@ body {
   line-height: 1.5;
 }
 
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scroll {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 a {
   color: #777;
   text-decoration: none;
@@ -73,6 +84,7 @@ section {
   font-weight: 700;
   background: linear-gradient(-45deg, #3db3c5, #274685);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -164,6 +176,7 @@ section {
 .step .number {
   background: linear-gradient(-45deg, #1391a5, #274685);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: 700;
   letter-spacing: 0.2rem;
