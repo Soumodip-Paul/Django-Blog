@@ -330,14 +330,14 @@ section {
   border: 1px solid #2d71a1;
 }
 
-.php-email-form .validate {
+.email-form .validate {
   display: none;
   color: red;
   margin: 0 0 15px 0;
   font-weight: 400;
   font-size: 13px;
 }
-.php-email-form .error-message {
+.email-form .error-message {
   display: none;
   color: #fff;
   background: #ed3c0d;
@@ -345,10 +345,10 @@ section {
   padding: 15px;
   font-weight: 600;
 }
-.php-email-form .error-message br + br {
+.email-form .error-message br + br {
   margin-top: 25px;
 }
-.php-email-form .sent-message {
+.email-form .sent-message {
   display: none;
   color: #fff;
   background: #18d26e;
@@ -356,13 +356,13 @@ section {
   padding: 15px;
   font-weight: 600;
 }
-.php-email-form .loading {
+.email-form .loading {
   display: none;
   background: #fff;
   text-align: center;
   padding: 15px;
 }
-.php-email-form .loading:before {
+.email-form .loading:before {
   content: "";
   display: inline-block;
   border-radius: 50%;
@@ -374,7 +374,7 @@ section {
   -webkit-animation: animate-loading 1s linear infinite;
   animation: animate-loading 1s linear infinite;
 }
-.php-email-form textarea {
+.email-form textarea {
   min-height: 160px;
 }
 
