@@ -29,7 +29,7 @@ tinymce.init({
   ],
   image_class_list: [
     { title: 'None', value: '' },
-    { title: 'Some class', value: 'class-name' }
+    { title: 'Auto Image Fit', value: 'w-100 h-auto' }
   ],
   importcss_append: true,
   file_picker_callback: function (callback, value, meta) {

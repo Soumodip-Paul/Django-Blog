@@ -1,6 +1,9 @@
 from django.utils import timezone
 from bs4 import BeautifulSoup
-import datetime,re
+from datetime import datetime
+import re
+
+regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 
 def pretty_date(time=False):
     """
@@ -59,3 +62,9 @@ def urlify(s):
     s = re.sub(r"\s+", '-', s)
 
     return s
+ 
+def isEmail(email):
+    if(re.fullmatch(regex, email)):
+        return True
+    else:
+        return False

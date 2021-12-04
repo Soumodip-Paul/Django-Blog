@@ -1,16 +1,22 @@
 {% extends 'temp.html' %}
 {% block desc %}
 {% endblock %}
-{% block title %}Features{% endblock %}
-{% block features_active %}active{% endblock %}
+{% block title %}
+Welcome to django blog
+{% endblock %}
+{% block contact_active %}active{% endblock %}
+{% block style %}
+<style>
+    body {
+        color: black !important;
+    }
+</style>
+{% endblock %}
 {% block main %}
+
 <main id="main">
-
-    <!-- ======= Features Section ======= -->
-
     <section class="hero-section inner-page">
         <div class="wave">
-
             <svg width="1920px" height="265px" viewBox="0 0 1920 265" version="1.1" xmlns="http://www.w3.org/2000/svg"
                 xmlns:xlink="http://www.w3.org/1999/xlink">
                 <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -21,7 +27,6 @@
                     </g>
                 </g>
             </svg>
-
         </div>
 
         <div class="container">
@@ -29,9 +34,10 @@
                 <div class="col-12">
                     <div class="row justify-content-center">
                         <div class="col-md-7 text-center hero-text">
-                            <h1 data-aos="fade-up" data-aos-delay="">SoftLand Features</h1>
-                            <p class="mb-5" data-aos="fade-up" data-aos-delay="100">Lorem ipsum dolor sit amet,
-                                consectetur adipisicing elit.</p>
+                            <h1 data-aos="fade-up" data-aos-delay="">Sign Up Now</h1>
+                            <p class="mb-5" data-aos="fade-up" data-aos-delay="100">
+                                Sign Up Now for free and access our exclusive content for absolutely free
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -40,69 +46,94 @@
 
     </section>
 
-    <section class="section pb-0">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-4 me-auto">
-                    <h2 class="mb-4">Seamlessly Communicate</h2>
-                    <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Tenetur at reprehenderit
-                        optio, laudantium eius quod, eum maxime molestiae porro omnis. Dolores aspernatur delectus
-                        impedit incidunt dolore mollitia esse natus beatae.</p>
-                    <p><a href="#">Read More</a></p>
-                </div>
-                <div class="col-md-6" data-aos="fade-left">
-                    <img src="/assets/img/undraw_svg_2.svg" alt="Image" class="img-fluid">
-                </div>
-            </div>
-        </div>
-    </section>
-
     <section class="section">
         <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-4 ms-auto order-2">
-                    <h2 class="mb-4">Gather Feedback</h2>
-                    <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Tenetur at reprehenderit
-                        optio, laudantium eius quod, eum maxime molestiae porro omnis. Dolores aspernatur delectus
-                        impedit incidunt dolore mollitia esse natus beatae.</p>
-                    <p><a href="#">Read More</a></p>
+            <div class="row mb-5 align-items-end">
+                <div class="col-md-6" data-aos="fade-up">
+                    <h2>Sign Up</h2>
+                    <p class="mb-0">
+                        Fill up the form to sign up now
+                    </p>
                 </div>
-                <div class="col-md-6" data-aos="fade-right">
-                    <img src="/assets/img/undraw_svg_3.svg" alt="Image" class="img-fluid">
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <section class="section pb-0">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-4 me-auto">
-                    <h2 class="mb-4">Present Designs Inspiration</h2>
-                    <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Tenetur at reprehenderit
-                        optio, laudantium eius quod, eum maxime molestiae porro omnis. Dolores aspernatur delectus
-                        impedit incidunt dolore mollitia esse natus beatae.</p>
-                    <p><a href="#">Read More</a></p>
-                </div>
-                <div class="col-md-6" data-aos="fade-left">
-                    <img src="/assets/img/undraw_svg_3.svg" alt="Image" class="img-fluid">
-                </div>
             </div>
-        </div>
-    </section>
 
-    <section class="section">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-4 ms-auto order-2">
-                    <h2 class="mb-4">Powerful App Design </h2>
-                    <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Tenetur at reprehenderit
-                        optio, laudantium eius quod, eum maxime molestiae porro omnis. Dolores aspernatur delectus
-                        impedit incidunt dolore mollitia esse natus beatae.</p>
-                    <p><a href="#">Read More</a></p>
+            <div class="row">
+                <div class="col-md-4 ms-auto order-2" data-aos="fade-up">
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <strong class="d-block mb-1">Address</strong>
+                            <span>Raja SC Mallik Road, Jadavpur, Kolkata, West Bengal, India Pin -700032</span>
+                        </li>
+                        <li class="mb-3">
+                            <strong class="d-block mb-1">Phone</strong>
+                            <span>+1 232 3235 324</span>
+                        </li>
+                        <li class="mb-3">
+                            <strong class="d-block mb-1">Email</strong>
+                            <span><a href="mailto:support@cooldeveloper.com">support@cooldeveloper.com</a></span>
+                        </li>
+                    </ul>
                 </div>
-                <div class="col-md-6" data-aos="fade-right">
-                    <img src="/assets/img/undraw_svg_4.svg" alt="Image" class="img-fluid">
+
+                <div class="col-md-6 mb-5 mb-md-0" data-aos="fade-up">
+                    <form action="/signup" method="post" role="form" class="email-form">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="firstName" name="firstName"
+                                        placeholder="First Name" required>
+                                    <label for="floatingInput">First Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 form-group mt-3 mt-md-0">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="lastName" name="lastName"
+                                        placeholder="Last Name" required>
+                                    <label for="floatingInput">Last Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-12 form-group mt-3">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="username" name="username"
+                                        placeholder="your user name">
+                                    <label for="floatingInput">Username (Only Alphanumeric)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-12 form-group mt-3">
+                                <div class="form-floating">
+                                    <input type="email" class="form-control" id="user_email" name="email"
+                                        placeholder="name@example.com">
+                                    <label for="floatingInput">Email address</label>
+                                </div>
+                            </div>
+                            <div class="col-md-12 form-group mt-3">
+                                <div class="form-floating">
+                                    <input type="password" class="form-control" id="password1" name="password1"
+                                        placeholder="password">
+                                    <label for="floatingInput">Choose a Password</label>
+                                </div>
+                            </div>
+                            <div class="col-md-12 form-group mt-3">
+                                <div class="form-floating">
+                                    <input type="password" class="form-control" id="password2" name="password2"
+                                        placeholder="password">
+                                    <label for="floatingInput">Confirm Password</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12 mb-3">
+                                <div class="loading">Loading</div>
+                                <div class="error-message"></div>
+                                <div class="sent-message">User successfully Created</div>
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <input type="submit" class="btn btn-primary d-block w-100" value="Sign Up Now">
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -215,8 +246,8 @@
                 </div>
             </div>
         </div>
-    </section>
-    <!-- End Testimonials Section -->
+    </section><!-- End Testimonials Section -->
+
     <!-- ======= CTA Section ======= -->
     <section class="section cta-section">
         <div class="container">
@@ -225,16 +256,21 @@
                     <h2>Starts Publishing Your Apps</h2>
                 </div>
                 <div class="col-md-5 text-center text-md-end">
-                    <p><a href="#" class="btn d-inline-flex align-items-center">
-                        <i class="bx bxl-apple"></i>
-                        <span>App Store</span></a> 
+                    <p>
                         <a href="#" class="btn d-inline-flex align-items-center">
-                        <i class="bx bxl-play-store"></i>
-                        <span>Google play</span>
-                    </a></p>
+                            <i class="bx bxl-apple"></i>
+                            <span>App store</span>
+                        </a>
+                        <a href="#" class="btn d-inline-flex align-items-center">
+                            <i class="bx bxl-play-store"></i>
+                            <span>Google play</span>
+                        </a>
+                    </p>
                 </div>
             </div>
         </div>
     </section><!-- End CTA Section -->
 </main>
+
 {% endblock %}
+{% block script %} <script src="/assets/vendor/email-form/signup.js"></script> {% endblock %}

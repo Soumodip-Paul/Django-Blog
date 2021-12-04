@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ContactClass,BlogCategory,Blog
+from .models import ContactClass,BlogCategory,Blog,UserModel
 from .utils import urlify
 
 # Register your models here.
@@ -19,6 +19,10 @@ def make_draft(modeladmin, request, queryset):
 def withdrawContent(modeladmin, request, queryset):
     queryset.update(blog_status='w')
 
+@admin.register(UserModel)
+class UserModelClass(admin.ModelAdmin):
+    list_display = ['user','avatar_image']
+
 @admin.register(ContactClass)
 class ContactModel(admin.ModelAdmin):
     list_display = ["query_id","customer_email","customer_name","query_subject","date"]
@@ -34,10 +38,10 @@ class BlogCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):
-    list_display = ["blog_id","blog_title","blog_url", "blog_status","blog_category","blog_date"]
+    list_display = ["blog_id","blog_title", "blog_status","blog_category","blog_date"]
     list_display_links = ["blog_id","blog_title",]
-    search_fields = ["blog_id","blog_title","blog_url", "blog_status","blog_category","blog_date"]
-    list_editable = ["blog_status","blog_category",]
+    search_fields = ["blog_id","blog_title", "blog_status","blog_category","blog_date"]
+    list_editable = ["blog_status","blog_category"]
     actions = [make_published, make_draft, withdrawContent]
     def get_queryset(self, request):
         qs = super(BlogAdmin, self).get_queryset(request)
@@ -47,11 +51,12 @@ class BlogAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         # associating the current logged in user to the client_id
         obj.blog_author = request.user
-        obj.blog_url = urlify(obj.blog_title)
-        isAvailable = Blog.objects.filter(blog_url=obj.blog_url)
-        print(isAvailable)
-        if len(isAvailable) != 0 :
-            obj.blog_url = obj.blog_url + "-" + str(Blog.objects.count() + 1)
+        if obj.blog_url == '':
+            obj.blog_url = urlify(obj.blog_title)
+            isAvailable = Blog.objects.filter(blog_url=obj.blog_url)
+            print(isAvailable)
+            if len(isAvailable) != 0 :
+                obj.blog_url = obj.blog_url + "-" + str(Blog.objects.count() + 1)
         super().save_model(request, obj, form, change)
     class Media: 
         js = ["js/tinymce.js"]

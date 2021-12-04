@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User, update_last_login
 
 BLOG_CHOICES = [
     ('d','draft'),
@@ -35,7 +36,7 @@ class BlogCategory(models.Model):
 class Blog(models.Model):
     blog_id = models.AutoField(primary_key=True)
     blog_title = models.CharField(default="",max_length=512)
-    blog_url = models.SlugField(default="",max_length=512,unique=True,editable=False)
+    blog_url = models.SlugField(default="",max_length=512,unique=True,blank=True, help_text="Leave blank if you donot want custom url")
     blog_image = models.ImageField(upload_to="blog/image", default="", null=True,blank=True)
     blog_status = models.CharField(default='d',max_length=1,choices=BLOG_CHOICES)
     blog_category = models.ForeignKey(BlogCategory,on_delete=models.SET(get_sentinel_category))
@@ -44,3 +45,8 @@ class Blog(models.Model):
     blog_content = models.TextField()
     def __str__(self) -> str:
         return self.blog_url
+
+
+class UserModel(models.Model):
+    user = models.OneToOneField(User,on_delete=models.SET(get_sentinel_user))
+    avatar_image = models.ImageField(upload_to="user/images",default="",null=True,blank=True)

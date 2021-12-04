@@ -28,8 +28,7 @@ Welcome to django blog
 					<div class="row justify-content-center">
 						<div class="col-md-7 text-center hero-text">
 							<h1 data-aos="fade-up" data-aos-delay="">Blog Posts</h1>
-							<p class="mb-5" data-aos="fade-up" data-aos-delay="100">Lorem ipsum dolor sit amet,
-								consectetur adipisicing elit.</p>
+							<p class="mb-5" data-aos="fade-up" data-aos-delay="100">Your favourite blog posts are here</p>
 						</div>
 					</div>
 				</div>
@@ -38,9 +37,35 @@ Welcome to django blog
 
 	</section>
 	<!-- ======= Blog List Section ======= -->
+	
 	<section class="section">
 		<div class="container">
+			{% if blogs|length != 0 %}
 			<div class="row mb-5">
+				{% for blog in blogs %}
+				<div class="col-md-4">
+					<div class="post-entry">
+						<a href="/blog/{{blog.blog_url}}" class="d-block mb-4">
+							<img src="{% if blog.blog_image != '' %}/media/{{blog.blog_image}}{% else %}/assets/img/img_1.jpg{% endif %}" alt="Image" class="img-fluid">
+						</a>
+						<div class="post-text">
+							<span class="post-meta">{{blog.blog_date}} &bullet; By <a href="#">{{blog.blog_author}}</a></span>
+							<h3><a href="/blog/{{blog.blog_url}}">{{blog.blog_title}}</a></h3>
+							<p>{{blog.blog_content}}{% if blog.blog_content|length > 119 %}...{% endif %}</p>
+							<p><a href="/blog/{{blog.blog_url}}" class="readmore">Read more</a></p>
+						</div>
+					</div>
+				</div>
+				{% if forloop.counter|divisibleby:3 %}
+				</div>
+				<div class="row mb-5">
+				{% endif %}
+				{% endfor %}
+			</div>
+			{% else %}
+			<h4 class="lead mb-5">No blog posts available now</h4>
+			{% endif %}
+			<!-- <div class="row mb-5">
 				<div class="col-md-4">
 					<div class="post-entry">
 						<a href="blog-single.html" class="d-block mb-4">
@@ -130,7 +155,7 @@ Welcome to django blog
 					<a href="#" class="p-3">3</a>
 					<a href="#" class="p-3">4</a>
 				</div>
-			</div>
+			</div> -->
 		</div>
 
 	</section>
@@ -143,9 +168,11 @@ Welcome to django blog
 					<h2>Starts Publishing Your Apps</h2>
 				</div>
 				<div class="col-md-5 text-center text-md-end">
-					<p><a href="#" class="btn d-inline-flex align-items-center"><i class="bx bxl-apple"></i><span>App
-								store</span></a> <a href="#" class="btn d-inline-flex align-items-center"><i
-								class="bx bxl-play-store"></i><span>Google play</span></a></p>
+					<p><a href="#" class="btn d-inline-flex align-items-center"><i class="bx bxl-apple"></i>
+						<span>App store</span></a> <a href="#" class="btn d-inline-flex align-items-center">
+							<i class="bx bxl-play-store"></i>
+						<span>Google play</span>
+					</a></p>
 				</div>
 			</div>
 		</div>
