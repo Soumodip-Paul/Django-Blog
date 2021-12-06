@@ -1,11 +1,12 @@
 from django.contrib import admin
-from .models import ContactClass,BlogCategory,Blog,UserModel
+from .models import ContactClass,BlogCategory,Blog,UserModel,Images
 from .utils import urlify
 
 # Register your models here.
 admin.site.site_header = "Cool Developer Admin Panel"
 admin.site.site_title = " Cool Developer Admin Portal"
 admin.site.index_title = "Welcome to Cool Developer Admin Portal"
+admin.site.register(Images)
 
 @admin.action(description='Mark selected content as published')
 def make_published(modeladmin, request, queryset):

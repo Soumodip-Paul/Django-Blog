@@ -1,10 +1,11 @@
-from django.http.response import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed
+from django.http.response import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from bs4 import BeautifulSoup
-from .models import Blog, BlogCategory, ContactClass
+from .models import Blog, BlogCategory, ContactClass, Images
 from .utils import isEmail, pretty_date, prettyFilter
 
 # Create your views here.
@@ -82,13 +83,13 @@ def signUp(req):
                 user.save()
             elif not username.isalnum(): raise ValueError("Username must be alphanumeric")
             elif not isEmail(email): raise ValueError("Enter a vaid email")
-            elif not password1==password2: raise ValueError("passwords donot match")
+            elif password1!=password2: raise ValueError("passwords donot match")
             elif isUserExists: raise NameError("User with this username already exists")
             elif isEmailExists: raise NameError("User with this email already exists")
         except ValueError as e: 
             return HttpResponseBadRequest(e)
         except NameError as e: 
-            return HttpResponseNotAllowed(e)
+            return HttpResponseForbidden(e)
         except Exception as e:
             return HttpResponse(status=500)
         return HttpResponse('OK')
@@ -103,10 +104,37 @@ def loginUser(req):
         print(username,password)
         if user is not None:
             login(req,user)
-            return HttpResponse('Ok '+user.get_username())
+            return redirect(req.META['HTTP_REFERER'])
         else: return HttpResponseBadRequest('Incorrect Credentials')
     return redirect('blogindex')
 
 def logoutUser(req):
     logout(req)
-    return redirect('blogindex')
+    return redirect(req.META['HTTP_REFERER'])
+
+def search(req):
+    qString = req.GET.get('q')
+    results = []
+    if qString != None and len(qString) != 0:
+        result = Blog.objects.filter(blog_title__icontains=qString).order_by('-blog_date')
+        results = [ item  for item in result]
+        result = Blog.objects.filter(blog_content__icontains=qString).order_by('-blog_date')
+        results.extend([item for item in result if item not in results])
+        results = results[:9]
+    return render(req, 'search.html', {'qs': qString or '' , 'blogs': prettyFilter(results) })
+
+@csrf_exempt
+def uploadImage(request):
+    if request.method == 'POST':
+        try:
+            print(request.headers)
+            print(request.POST)
+            print(request.FILES)
+            file = request.FILES['file']
+            product = Images.objects.create(image=file)
+            product.save()
+            return JsonResponse({'location': '/media/' + str(product.image)})
+        except KeyError:
+            return HttpResponseBadRequest("File not found")
+
+    return render(request,'s.html')

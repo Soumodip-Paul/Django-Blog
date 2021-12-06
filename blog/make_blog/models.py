@@ -37,7 +37,7 @@ class Blog(models.Model):
     blog_id = models.AutoField(primary_key=True)
     blog_title = models.CharField(default="",max_length=512)
     blog_url = models.SlugField(default="",max_length=512,unique=True,blank=True, help_text="Leave blank if you donot want custom url")
-    blog_image = models.ImageField(upload_to="blog/image", default="", null=True,blank=True)
+    blog_image = models.ImageField(upload_to="blog/%Y/%m/%d/image", default="", null=True,blank=True)
     blog_status = models.CharField(default='d',max_length=1,choices=BLOG_CHOICES)
     blog_category = models.ForeignKey(BlogCategory,on_delete=models.SET(get_sentinel_category))
     blog_author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET(get_sentinel_user),editable=False)
@@ -49,4 +49,10 @@ class Blog(models.Model):
 
 class UserModel(models.Model):
     user = models.OneToOneField(User,on_delete=models.SET(get_sentinel_user))
-    avatar_image = models.ImageField(upload_to="user/images",default="",null=True,blank=True)
+    avatar_image = models.ImageField(upload_to="user/%Y/%m/%d/images",default="",null=True,blank=True)
+
+class Images(models.Model):
+    image_id = models.AutoField(primary_key=True)
+    image = models.ImageField(default='',upload_to='blog/%Y/%m/%d/image')
+    def __str__(self) -> str:
+        return str(self.image_id)

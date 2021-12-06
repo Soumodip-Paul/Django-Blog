@@ -16,5 +16,7 @@ urlpatterns = [
     path('features/', views.features,name='blogfeatures'),
     path('pricing/', views.pricing,name='blogpricing'),
     path('contact/', views.contact,name='blogcontact'),
+    path('search', views.search,name='blogsearch'),
+    path('upload-image', views.uploadImage,name='upload_image'),
     path('blog-single/', views.blog_single,name='blog-single'),
 ]

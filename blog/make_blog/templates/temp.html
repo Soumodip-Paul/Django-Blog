@@ -13,7 +13,9 @@
 	<!-- Google Fonts -->
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i&display=swap" rel="stylesheet">	
+	<link
+		href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i&display=swap"
+		rel="stylesheet">
 	<!-- Vendor CSS Files -->
 	<link href="/assets/vendor/aos/aos.css" rel="stylesheet">
 	<link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -25,7 +27,7 @@
 	{% block style %}{% endblock %}
 </head>
 
-<body class="custom-scroll">
+<body class="custom-scroll pe-0">
 	<!-- ======= Header ======= -->
 	<header id="header" class="fixed-top d-flex align-items-center">
 		<div class="container d-flex justify-content-between align-items-center">
@@ -40,7 +42,24 @@
 					<li><a class="{% block blog_active %}{% endblock %}" href="/blog">Blog</a></li>
 					<li><a class="{% block features_active %}{% endblock %}" href="/features">Features</a></li>
 					<li><a class="{% block pricing_active %}{% endblock %}" href="/pricing">Pricing</a></li>
-					<li><a class="{% block contact_active %}{% endblock %}" href="/contact">Contact Us</a></li>
+					{% if not user.is_authenticated %}
+					<li><a class="{% block blog_signup %}{% endblock %}" href="/signup">Sign Up</a></li>
+					<li><a class="{% block blog_login %}{% endblock %}" href="/login" data-bs-toggle="modal" data-bs-target="#modalSignIn">Login</a></li>
+					{% else %}
+					<li  class="dropdown">
+						<a class=" active" href="#"><span>{{request.user.first_name}} &nbsp;<i class="bi bi-chevron-down"></i></span>
+						</a>
+						<ul class="dropdown-menu">
+						  <li><a class="dropdown-item" href="#">Action</a></li>
+						  <li><a class="dropdown-item" href="#">Another action</a></li>
+						  <li><hr class="dropdown-divider"></li>
+						  {% if user.is_superuser %}
+						  <li><a class="dropdown-item" href="/admin">Admin Panel</a></li>
+						  {% endif %}
+						  <li><a class="dropdown-item" href="/logout">Log Out</a></li>
+						</ul>
+					</li>
+					{% endif %}
 					<!-- <li class="dropdown"><a href="."><span>Drop Down</span> <i class="bi bi-chevron-down"></i></a>
 						<ul>
 							<li><a href="#">Drop Down 1</a></li>
@@ -73,15 +92,21 @@
 					<h3>About US</h3>
 					<p>
 						Cool Developer is a free learning platform for coders.Learn all of the modern
-						web development technologies like like React JS, Django , Flusk, Angular JS, 
-						Node JS , Mongo DB, SQLite Database and  Android Development for absolutely free.
+						web development technologies like like React JS, Django , Flusk, Angular JS,
+						Node JS , Mongo DB, SQLite Database and Android Development for absolutely free.
 					</p>
 					<p class="social">
-						<a target="_blank" rel="noopener noreferrer" href="https://twitter.com/soumodippaul6"><span class="bi bi-twitter"></span><span class="visually-hidden">go to</span></a>
-						<a target="_blank" rel="noopener noreferrer" href="https://github.com/Soumodip-Paul"><span class="bi bi-github"></span><span class="visually-hidden">go to</span></a>
-						<a target="_blank" rel="noopener noreferrer" href="https://youtube.com/channel/UCOFwfN-LJ7wGvAOovAwpjxg?sub_confirmation=1"><span class="bi bi-youtube"></span><span class="visually-hidden">go to</span></a>
-						<a target="_blank" rel="noopener noreferrer" href="https://instagram.com/soumodippaul64"><span class="bi bi-instagram"></span><span class="visually-hidden">go to</span></a>
-						<a target="_blank" rel="noopener noreferrer" href="#"><span class="bi bi-linkedin"></span><span class="visually-hidden">go to</span></a>
+						<a target="_blank" rel="noopener noreferrer" href="https://twitter.com/soumodippaul6"><span
+								class="bi bi-twitter"></span><span class="visually-hidden">go to</span></a>
+						<a target="_blank" rel="noopener noreferrer" href="https://github.com/Soumodip-Paul"><span
+								class="bi bi-github"></span><span class="visually-hidden">go to</span></a>
+						<a target="_blank" rel="noopener noreferrer"
+							href="https://youtube.com/channel/UCOFwfN-LJ7wGvAOovAwpjxg?sub_confirmation=1"><span
+								class="bi bi-youtube"></span><span class="visually-hidden">go to</span></a>
+						<a target="_blank" rel="noopener noreferrer" href="https://instagram.com/soumodippaul64"><span
+								class="bi bi-instagram"></span><span class="visually-hidden">go to</span></a>
+						<a target="_blank" rel="noopener noreferrer" href="#"><span class="bi bi-linkedin"></span><span
+								class="visually-hidden">go to</span></a>
 					</p>
 				</div>
 				<div class="col-md-7 ms-auto">
@@ -126,6 +151,33 @@
 	</footer>
 	<span role="button" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
 		class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></span>
+	<div class="modal fade" id="modalSignIn" tabindex="100" aria-labelledby="modalDialogIn" aria-hidden="true">
+		<form class="modal-dialog no-scroll" id="modalLogin" action="/login" method="post">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="modalDialogIn">Login Now</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					{% csrf_token %}
+					<div class="form-floating mb-3">
+						<input type="text" name="username" class="form-control rounded-4" id="username"
+							placeholder="name@example.com">
+						<label for="username">Username</label>
+					</div>
+					<div class="form-floating mb-3">
+						<input type="password" name="password" class="form-control rounded-4" id="floatingPassword"
+							placeholder="Password">
+						<label for="floatingPassword">Password</label>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+					<button type="submit" class="btn btn-primary">Login</button>
+				</div>
+			</div>
+		</form>
+	</div>
 	<!-- Vendor JS Files -->
 	<script src="/assets/vendor/aos/aos.js"></script>
 	<script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -134,4 +186,5 @@
 	<script src="/assets/js/main.js"></script>
 	{% block script %}{% endblock %}
 </body>
+
 </html>

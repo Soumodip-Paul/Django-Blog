@@ -41,13 +41,131 @@
             <div class="col-md-8 blog-content">
                 <p class="lead mb-5">{{blog_desc}}{% if blog_desc|length > 119 %}...{% endif %}</p>
                 {{blog.blog_content|safe}}
+                <div class="pt-5">
+                  <p>Category: <a href="/category/{{blog.blog_category.category_url}}">{{blog.blog_category.category_name}}</a> Tags: <a href="#">#html</a>, <a href="#">#trends</a></p>
+                </div>
+                <div class="pt-5">
+                  <h3 class="mb-5">6 Comments</h3>
+                  <ul class="comment-list">
+                    <li class="comment">
+                      <div class="vcard bio">
+                        <img src="/assets/img/person_1.jpg" alt="Free Website Template by Free-Template.co">
+                      </div>
+                      <div class="comment-body">
+                        <h3>Jean Doe</h3>
+                        <div class="meta">January 9, 2018 at 2:21pm</div>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur quidem laborum necessitatibus, ipsam impedit vitae autem, eum officia, fugiat saepe enim sapiente iste iure! Quam voluptas earum impedit necessitatibus, nihil?</p>
+                        <p><a href="#" class="reply">Reply</a></p>
+                      </div>
+                    </li>
+    
+                    <li class="comment">
+                      <div class="vcard bio">
+                        <img src="/assets/img/person_1.jpg" alt="Image placeholder">
+                      </div>
+                      <div class="comment-body">
+                        <h3>Jean Doe</h3>
+                        <div class="meta">January 9, 2018 at 2:21pm</div>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur quidem laborum necessitatibus, ipsam impedit vitae autem, eum officia, fugiat saepe enim sapiente iste iure! Quam voluptas earum impedit necessitatibus, nihil?</p>
+                        <p><a href="#" class="reply">Reply</a></p>
+                      </div>
+    
+                      <ul class="children">
+                        <li class="comment">
+                          <div class="vcard bio">
+                            <img src="/assets/img/person_1.jpg" alt="Image placeholder">
+                          </div>
+                          <div class="comment-body">
+                            <h3>Jean Doe</h3>
+                            <div class="meta">January 9, 2018 at 2:21pm</div>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur quidem laborum necessitatibus, ipsam impedit vitae autem, eum officia, fugiat saepe enim sapiente iste iure! Quam voluptas earum impedit necessitatibus, nihil?</p>
+                            <p><a href="#" class="reply">Reply</a></p>
+                          </div>
+    
+                          <ul class="children">
+                            <li class="comment">
+                              <div class="vcard bio">
+                                <img src="/assets/img/person_1.jpg" alt="Image placeholder">
+                              </div>
+                              <div class="comment-body">
+                                <h3>Jean Doe</h3>
+                                <div class="meta">January 9, 2018 at 2:21pm</div>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur quidem laborum necessitatibus, ipsam impedit vitae autem, eum officia, fugiat saepe enim sapiente iste iure! Quam voluptas earum impedit necessitatibus, nihil?</p>
+                                <p><a href="#" class="reply">Reply</a></p>
+                              </div>
+    
+                              <ul class="children">
+                                <li class="comment">
+                                  <div class="vcard bio">
+                                    <img src="/assets/img/person_1.jpg" alt="Image placeholder">
+                                  </div>
+                                  <div class="comment-body">
+                                    <h3>Jean Doe</h3>
+                                    <div class="meta">January 9, 2018 at 2:21pm</div>
+                                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur quidem laborum necessitatibus, ipsam impedit vitae autem, eum officia, fugiat saepe enim sapiente iste iure! Quam voluptas earum impedit necessitatibus, nihil?</p>
+                                    <p><a href="#" class="reply">Reply</a></p>
+                                  </div>
+                                </li>
+                              </ul>
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+    
+                    <li class="comment">
+                      <div class="vcard bio">
+                        <img src="/assets/img/person_1.jpg" alt="Image placeholder">
+                      </div>
+                      <div class="comment-body">
+                        <h3>Jean Doe</h3>
+                        <div class="meta">January 9, 2018 at 2:21pm</div>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur quidem laborum necessitatibus, ipsam impedit vitae autem, eum officia, fugiat saepe enim sapiente iste iure! Quam voluptas earum impedit necessitatibus, nihil?</p>
+                        <p><a href="#" class="reply">Reply</a></p>
+                      </div>
+                    </li>
+                  </ul>
+                  <!-- END comment-list -->
+                  
+                {% if user.is_authenticated %}
+                  <div class="comment-form-wrap pt-5">
+                    <h3 class="mb-5">Leave a comment</h3>
+                    <form action="#" class="">
+                      <div class="form-group">
+                        <label for="name">Name *</label>
+                        <input type="text" class="form-control" id="name">
+                      </div>
+                      <div class="form-group mt-3">
+                        <label for="email">Email *</label>
+                        <input type="email" class="form-control" id="email">
+                      </div>
+                      <div class="form-group mt-3">
+                        <label for="website">Website</label>
+                        <input type="url" class="form-control" id="website">
+                      </div>
+    
+                      <div class="form-group mt-3">
+                        <label for="message">Message</label>
+                        <textarea name="" id="message" cols="30" rows="10" class="form-control"></textarea>
+                      </div>
+                      <div class="form-group mt-3">
+                        <input type="submit" value="Post Comment" class="btn btn-primary">
+                      </div>
+    
+                    </form>
+                  </div>
+                  {% else %}
+                <h4 class="mb-5 fst-italic text-center">Login to Leave Comment</h4>
+                {% endif %}
+                </div>
+                
             </div>
           <div class="col-md-4 sidebar">
             <div class="sidebar-box">
-              <form action="#" class="search-form">
+              <form action="/search" class="search-form">
                 <div class="form-group">
                   <span class="icon fa fa-search"></span>
-                  <input type="text" class="form-control" placeholder="Type a keyword and hit enter">
+                  <input type="text" class="form-control" name="q" placeholder="Search Blog">
                 </div>
               </form>
             </div>
