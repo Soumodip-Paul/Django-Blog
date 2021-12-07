@@ -1,9 +1,21 @@
 from django.utils import timezone
+from django.shortcuts import redirect
 from bs4 import BeautifulSoup
 from datetime import datetime
+from math import ceil
 import re
 
 regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+
+
+class Pages:
+    listItem = None
+    pages = 0
+    p = 0
+    def __init__(self,listItem,pages:int,p:int):
+        self.listItem = listItem
+        self.pages =pages
+        self.p = p  
 
 def pretty_date(time=False):
     """
@@ -68,3 +80,11 @@ def isEmail(email):
         return True
     else:
         return False
+        
+def paginateResults(req, filter_list, ResultPerPage:int, Redirect:str) -> Pages:
+    print(filter_list)
+    pages = ceil(len(filter_list) / ResultPerPage)
+    p = int(req.GET.get('p') or 1)
+    if pages > 0 and p > pages or p < 1: return redirect(Redirect)
+    else : return Pages(listItem=filter_list[ (p - 1) * ResultPerPage: p * ResultPerPage],pages=pages,p=p)
+       

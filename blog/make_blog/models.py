@@ -1,7 +1,8 @@
 from django.db import models
 from django.conf import settings
+from django.utils.timezone import now
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User, update_last_login
+from django.contrib.auth.models import User
 
 BLOG_CHOICES = [
     ('d','draft'),
@@ -56,3 +57,13 @@ class Images(models.Model):
     image = models.ImageField(default='',upload_to='blog/%Y/%m/%d/image')
     def __str__(self) -> str:
         return str(self.image_id)
+
+class Comment(models.Model):
+    id = models.AutoField(primary_key=True)
+    Text = models.TextField()
+    user = models.ForeignKey(User,models.CASCADE)
+    post = models.ForeignKey(Blog, models.CASCADE)
+    parent = models.ForeignKey('self', models.CASCADE, null=True)
+    timestamp = models.DateTimeField(default=now)
+    def __str__(self) -> str:
+        return str(self.id) + " " + str(self.post)

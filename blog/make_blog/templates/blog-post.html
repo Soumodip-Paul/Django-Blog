@@ -45,108 +45,37 @@
                   <p>Category: <a href="/category/{{blog.blog_category.category_url}}">{{blog.blog_category.category_name}}</a> Tags: <a href="#">#html</a>, <a href="#">#trends</a></p>
                 </div>
                 <div class="pt-5">
-                  <h3 class="mb-5">6 Comments</h3>
+                  {% for comment in comments %}
+                  {% if forloop.counter == 1 %}
+                  <h3 class="mb-5">{{comments|length}} Comments</h3>
                   <ul class="comment-list">
+                    {% endif %}
                     <li class="comment">
                       <div class="vcard bio">
-                        <img src="/assets/img/person_1.jpg" alt="Free Website Template by Free-Template.co">
+                        <img src="/assets/img/person_1.jpg" alt="User Image">
                       </div>
                       <div class="comment-body">
-                        <h3>Jean Doe</h3>
-                        <div class="meta">January 9, 2018 at 2:21pm</div>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur quidem laborum necessitatibus, ipsam impedit vitae autem, eum officia, fugiat saepe enim sapiente iste iure! Quam voluptas earum impedit necessitatibus, nihil?</p>
+                        <h3>{{comment.user.first_name}} {{comment.user.last_name}}</h3>
+                        <div class="meta">{{comment.timestamp}}</div>
+                        <p>{{comment.Text}}</p>
                         <p><a href="#" class="reply">Reply</a></p>
                       </div>
                     </li>
-    
-                    <li class="comment">
-                      <div class="vcard bio">
-                        <img src="/assets/img/person_1.jpg" alt="Image placeholder">
-                      </div>
-                      <div class="comment-body">
-                        <h3>Jean Doe</h3>
-                        <div class="meta">January 9, 2018 at 2:21pm</div>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur quidem laborum necessitatibus, ipsam impedit vitae autem, eum officia, fugiat saepe enim sapiente iste iure! Quam voluptas earum impedit necessitatibus, nihil?</p>
-                        <p><a href="#" class="reply">Reply</a></p>
-                      </div>
-    
-                      <ul class="children">
-                        <li class="comment">
-                          <div class="vcard bio">
-                            <img src="/assets/img/person_1.jpg" alt="Image placeholder">
-                          </div>
-                          <div class="comment-body">
-                            <h3>Jean Doe</h3>
-                            <div class="meta">January 9, 2018 at 2:21pm</div>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur quidem laborum necessitatibus, ipsam impedit vitae autem, eum officia, fugiat saepe enim sapiente iste iure! Quam voluptas earum impedit necessitatibus, nihil?</p>
-                            <p><a href="#" class="reply">Reply</a></p>
-                          </div>
-    
-                          <ul class="children">
-                            <li class="comment">
-                              <div class="vcard bio">
-                                <img src="/assets/img/person_1.jpg" alt="Image placeholder">
-                              </div>
-                              <div class="comment-body">
-                                <h3>Jean Doe</h3>
-                                <div class="meta">January 9, 2018 at 2:21pm</div>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur quidem laborum necessitatibus, ipsam impedit vitae autem, eum officia, fugiat saepe enim sapiente iste iure! Quam voluptas earum impedit necessitatibus, nihil?</p>
-                                <p><a href="#" class="reply">Reply</a></p>
-                              </div>
-    
-                              <ul class="children">
-                                <li class="comment">
-                                  <div class="vcard bio">
-                                    <img src="/assets/img/person_1.jpg" alt="Image placeholder">
-                                  </div>
-                                  <div class="comment-body">
-                                    <h3>Jean Doe</h3>
-                                    <div class="meta">January 9, 2018 at 2:21pm</div>
-                                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur quidem laborum necessitatibus, ipsam impedit vitae autem, eum officia, fugiat saepe enim sapiente iste iure! Quam voluptas earum impedit necessitatibus, nihil?</p>
-                                    <p><a href="#" class="reply">Reply</a></p>
-                                  </div>
-                                </li>
-                              </ul>
-                            </li>
-                          </ul>
-                        </li>
-                      </ul>
-                    </li>
-    
-                    <li class="comment">
-                      <div class="vcard bio">
-                        <img src="/assets/img/person_1.jpg" alt="Image placeholder">
-                      </div>
-                      <div class="comment-body">
-                        <h3>Jean Doe</h3>
-                        <div class="meta">January 9, 2018 at 2:21pm</div>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur quidem laborum necessitatibus, ipsam impedit vitae autem, eum officia, fugiat saepe enim sapiente iste iure! Quam voluptas earum impedit necessitatibus, nihil?</p>
-                        <p><a href="#" class="reply">Reply</a></p>
-                      </div>
-                    </li>
+                    {% if forloop.last %}
                   </ul>
+                  {% endif %}
+                  {% endfor %}
                   <!-- END comment-list -->
                   
                 {% if user.is_authenticated %}
                   <div class="comment-form-wrap pt-5">
-                    <h3 class="mb-5">Leave a comment</h3>
-                    <form action="#" class="">
-                      <div class="form-group">
-                        <label for="name">Name *</label>
-                        <input type="text" class="form-control" id="name">
-                      </div>
+                    <h3 class="mb-2">Leave a comment</h3>
+                    <form action="/post-comment" class="" method="post">
+                      {% csrf_token %}    
+                      <input type="hidden" name="postId" value="{{blog.blog_id}}">
                       <div class="form-group mt-3">
-                        <label for="email">Email *</label>
-                        <input type="email" class="form-control" id="email">
-                      </div>
-                      <div class="form-group mt-3">
-                        <label for="website">Website</label>
-                        <input type="url" class="form-control" id="website">
-                      </div>
-    
-                      <div class="form-group mt-3">
-                        <label for="message">Message</label>
-                        <textarea name="" id="message" cols="30" rows="10" class="form-control"></textarea>
+                        <!-- <label for="message">Message *</label> -->
+                        <textarea name="comment" id="message" required cols="30" rows="20" class="form-control" placeholder="Enter your comment"></textarea>
                       </div>
                       <div class="form-group mt-3">
                         <input type="submit" value="Post Comment" class="btn btn-primary">

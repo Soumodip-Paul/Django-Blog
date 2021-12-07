@@ -1,26 +1,26 @@
-from django.http.response import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, JsonResponse
+from django.http.response import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from bs4 import BeautifulSoup
-from .models import Blog, BlogCategory, ContactClass, Images
-from .utils import isEmail, pretty_date, prettyFilter
+from .models import Blog, BlogCategory, Comment, ContactClass, Images
+from .utils import isEmail, pretty_date, prettyFilter, paginateResults
 
-# Create your views here.
-from django.shortcuts import render
+ResultPerPage = 6
 
 def index(req):
     return render(req,'index.html')
 
 def blog(req):
     posted_blogs = Blog.objects.filter(blog_status='p').order_by('-blog_date')
+    resultPage = paginateResults(req,posted_blogs,ResultPerPage,'blogvalue')
     blogs = []
-    for blog in posted_blogs[:9] :
+    for blog in resultPage.listItem:
         blogs.append(blog)
     blogs = prettyFilter(blogs)
-    return render(req,'blog.html',{'blogs' : blogs })
+    return render(req,'blog.html',{'blogs' : blogs, 'pages': range(resultPage.pages), 'p': resultPage.p })
 def blogpost(req,id):
     try:
         blog_categories = BlogCategory.objects.all().order_by('-date')
@@ -31,9 +31,10 @@ def blogpost(req,id):
             categories.append(cat)
         blogPostItem = Blog.objects.get(blog_url=id)
         if blogPostItem.blog_status == 'p' :
+            comments = [item for item in Comment.objects.filter(post=blogPostItem).order_by('-timestamp')[:100]]
             blog_desc = BeautifulSoup(blogPostItem.blog_content,"html.parser").get_text()[:120]
             blogPostItem.blog_date = pretty_date(blogPostItem.blog_date)
-            return render(req,'blog-post.html',{ 'blog': blogPostItem, 'blog_desc': blog_desc, 'categories': categories })
+            return render(req,'blog-post.html',{ 'blog': blogPostItem, 'blog_desc': blog_desc, 'categories': categories, 'comments': comments })
         raise Http404("Page not found error 2")
     except:
         raise Http404("Page not found error")
@@ -58,14 +59,14 @@ def blog_single(req):
 def category(req,id):
     posted_blogs = Blog.objects.filter(blog_category__category_url=id,blog_status='p').order_by('-blog_date')
     blogs = []
-    for blog in posted_blogs[:9] :
+    results = paginateResults(req,posted_blogs,ResultPerPage,'blogcategoryvalue')
+    for blog in results.listItem :
         blogs.append(blog)
     blogs = prettyFilter(blogs)
-    return render(req,'blog.html',{'blogs' : blogs })
+    return render(req,'blog.html',{'blogs' : blogs, 'pages': range(results.pages), 'p':  results.p })
 
 def signUp(req):
     if req.method == 'POST':
-        # To be implemented user auth flow
         try:
             body = req.POST
             fname = body['firstName']
@@ -96,21 +97,19 @@ def signUp(req):
     return render(req,'signup.html')
 
 def loginUser(req):
-    print(req)
     if req.method == 'POST':
         username = req.POST.get('username')
         password = req.POST.get('password')
         user = authenticate(username=username,password=password)
-        print(username,password)
         if user is not None:
             login(req,user)
-            return redirect(req.META['HTTP_REFERER'])
+            return redirect( req.POST.get('redirect') or req.META.get('HTTP_REFERER') or '/')
         else: return HttpResponseBadRequest('Incorrect Credentials')
-    return redirect('blogindex')
+    return render(req,'login.html') if not req.user.is_authenticated else redirect('/') 
 
 def logoutUser(req):
     logout(req)
-    return redirect(req.META['HTTP_REFERER'])
+    return redirect(req.META.get('HTTP_REFERER') or '/')
 
 def search(req):
     qString = req.GET.get('q')
@@ -120,21 +119,37 @@ def search(req):
         results = [ item  for item in result]
         result = Blog.objects.filter(blog_content__icontains=qString).order_by('-blog_date')
         results.extend([item for item in result if item not in results])
-        results = results[:9]
-    return render(req, 'search.html', {'qs': qString or '' , 'blogs': prettyFilter(results) })
+        results = paginateResults(req,results or [],ResultPerPage,'blogsearch')
+        return render(req, 'search.html', {'qs': qString or '' , 'blogs': prettyFilter(results.listItem), 'pages':range(results.pages), 'p': results.p })
+    return render(req,'search.html',{})
 
 @csrf_exempt
 def uploadImage(request):
-    if request.method == 'POST':
+    if request.method == 'POST' and request.user.is_authenticated: # and str(request.headers['Origin']).split(':')[0] in ALLOWED_HOSTS:
         try:
-            print(request.headers)
-            print(request.POST)
-            print(request.FILES)
-            file = request.FILES['file']
+            file = request.FILES.get('file') or request.FILES.get('image')
             product = Images.objects.create(image=file)
             product.save()
             return JsonResponse({'location': '/media/' + str(product.image)})
         except KeyError:
             return HttpResponseBadRequest("File not found")
+        except:
+            return HttpResponse("Internal server error", status=500)
+    if request.user.is_authenticated:
+        return render(request,'s.html') 
+    else:  raise Http404("Page not found")
 
-    return render(request,'s.html')
+def postComment(req):
+    if req.method == 'POST' and req.user.is_authenticated and req.POST.get('comment') is not None and req.POST.get('postId') is not None :
+        try: 
+            Text = req.POST['comment']
+            user = req.user
+            postId = req.POST['postId']
+            post = Blog.objects.get(blog_id=postId)
+            comment = Comment(Text=Text,user=user,post=post,parent=None)
+            comment.save()
+            return redirect(req.META['HTTP_REFERER'] or '/')
+        except Exception as e:
+            print(e)
+            return HttpResponseBadRequest("Bad request")
+    return redirect(req.META['HTTP_REFERER'] or '/')

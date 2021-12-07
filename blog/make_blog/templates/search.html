@@ -33,7 +33,9 @@ Welcome to django blog
 										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: var(--bs-white);"><path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"></path></svg>
 									</button>
 								</form>  
+							{% if qs|length != 0 %}
 							<p class="mb-5" data-aos="fade-up" data-aos-delay="100"> Your search reasults for "{{qs}}"</p>
+							{% endif %}
 						</div>
 					</div>
 				</div>
@@ -71,6 +73,21 @@ Welcome to django blog
 			<h4 class="lead m-5 fst-italic text-center" style="font-family: 'Roboto', sans-serif;">No search results are available...</h4>
 			{% endif %}
 			</div>
+			{% for page in pages %}
+			{% if forloop.counter == 1 %}
+			<div class="row">
+				<div class="col-12 text-center">
+				{% endif %}
+					{% if  p == page|add:1 %}
+					<span class="p-3 active text-primary">{{page|add:1}}</span>
+					{% else %}
+					<a href="?p={{page|add:1}}" class="p-3">{{page|add:1}}</a>
+					{% endif %}
+					{% if forloop.last %}
+				</div>
+			</div> 
+			{% endif %}
+			{% endfor %}
 
 	</section>
 

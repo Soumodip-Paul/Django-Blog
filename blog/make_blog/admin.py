@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ContactClass,BlogCategory,Blog,UserModel,Images
+from .models import Comment, ContactClass,BlogCategory,Blog,UserModel,Images
 from .utils import urlify
 
 # Register your models here.
@@ -61,3 +61,10 @@ class BlogAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
     class Media: 
         js = ["js/tinymce.js"]
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'timestamp']
+    search_fields = ['id', 'user', 'timestamp', 'parent']
+    def has_change_permission(self, request, obj = ...) -> bool:
+        return False

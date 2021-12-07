@@ -151,6 +151,7 @@
 	</footer>
 	<span role="button" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
 		class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></span>
+	{% if not request.user.is_authenticated%}
 	<div class="modal fade" id="modalSignIn" tabindex="100" aria-labelledby="modalDialogIn" aria-hidden="true">
 		<form class="modal-dialog no-scroll" id="modalLogin" action="/login" method="post">
 			<div class="modal-content">
@@ -178,6 +179,7 @@
 			</div>
 		</form>
 	</div>
+	{% endif %}
 	<!-- Vendor JS Files -->
 	<script src="/assets/vendor/aos/aos.js"></script>
 	<script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>

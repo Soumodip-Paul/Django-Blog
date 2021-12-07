@@ -146,16 +146,22 @@ Welcome to django blog
 					</div>
 				</div>
 
-			</div>
-
+			</div>-->
+			{% for page in pages %}
+			{% if forloop.counter == 1 %}
 			<div class="row">
 				<div class="col-12 text-center">
-					<span class="p-3 active text-primary">1</span>
-					<a href="#" class="p-3">2</a>
-					<a href="#" class="p-3">3</a>
-					<a href="#" class="p-3">4</a>
+				{% endif %}
+					{% if  p == page|add:1 %}
+					<span class="p-3 active text-primary">{{page|add:1}}</span>
+					{% else %}
+					<a href="?p={{page|add:1}}" class="p-3">{{page|add:1}}</a>
+					{% endif %}
+					{% if forloop.last %}
 				</div>
-			</div> -->
+			</div> 
+			{% endif %}
+			{% endfor %}
 		</div>
 
 	</section>
