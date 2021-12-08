@@ -11,6 +11,7 @@ urlpatterns = [
     path('logout', views.logoutUser,name='blogLogout'),
     path('login', views.loginUser,name='blogLogin'),
     path('signup', views.signUp,name='userSignUp'),
+    path('profile', views.userProfile,name='userProfile'),
     path('search', views.search,name='blogsearch'),
     path('post-comment', views.postComment,name='postComment'),
     path('upload-image', views.uploadImage,name='upload_image'),

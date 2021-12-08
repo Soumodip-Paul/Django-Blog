@@ -32,9 +32,9 @@
 	<header id="header" class="fixed-top d-flex align-items-center">
 		<div class="container d-flex justify-content-between align-items-center">
 			<div class="logo">
-				<h1><a href="/">Cool Developer</a></h1>
+				<!-- <h1><a href="/">Cool Developer</a></h1> -->
 				<!-- Uncomment below if you prefer to use an image logo -->
-				<!-- <a href="/"><img src="/assets/img/logo.png" alt="" class="img-fluid"></a> -->
+				<a href="/"><img src="/assets/img/apple-touch-icon.png" alt="Logo" class="img-fluid"></a>
 			</div>
 			<nav id="navbar" class="navbar">
 				<ul>
@@ -50,7 +50,7 @@
 						<a class=" active" href="#"><span>{{request.user.first_name}} &nbsp;<i class="bi bi-chevron-down"></i></span>
 						</a>
 						<ul class="dropdown-menu">
-						  <li><a class="dropdown-item" href="#">Action</a></li>
+						  <li><a class="dropdown-item {% block blog_profile %}{% endblock %}" href="/profile">Profile</a></li>
 						  <li><a class="dropdown-item" href="#">Another action</a></li>
 						  <li><hr class="dropdown-divider"></li>
 						  {% if user.is_superuser %}

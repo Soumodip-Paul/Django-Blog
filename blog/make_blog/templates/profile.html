@@ -4,7 +4,7 @@
 {% block title %}
 Welcome to django blog
 {% endblock %}
-{% block blog_signup %}active{% endblock %}
+{% block blog_profile %}active{% endblock %}
 {% block style %}
 <style>
     body {
@@ -73,9 +73,9 @@ Welcome to django blog
                 <div class="col-12">
                     <div class="row justify-content-center">
                         <div class="col-md-7 text-center hero-text">
-                            <h1 data-aos="fade-up" data-aos-delay="">Sign Up Now</h1>
+                            <h1 data-aos="fade-up" data-aos-delay="">{{request.user.first_name}}'s Profile</h1>
                             <p class="mb-5" data-aos="fade-up" data-aos-delay="100">
-                                Sign Up Now for free and access our exclusive content for absolutely free
+                                Customise your Profile here
                             </p>
                         </div>
                     </div>
@@ -86,27 +86,27 @@ Welcome to django blog
     </section>
 
     <section class="section">
-        <form action="/signup" method="post" role="form" enctype="multipart/form-data" class="email-form">
+        <form action="/profile" method="post" role="form" enctype="multipart/form-data" class="email-form">
             <div class="container">
                 <div class="row mb-5 align-items-end">
                     <div class="col-md-6" data-aos="fade-up">
-                        <h2>Sign Up</h2>
+                        <h2>Your Profile</h2>
                         <p class="mb-0">
-                            Fill up the form to sign up now
+                            Edit your profile now
                         </p>
                     </div>
 
                 </div>
 
                 <div class="row">
-                    <div class="col-md-4 ms-auto order-2" data-aos="fade-up">
+                    <div class="col-md-4 me-auto order-1" data-aos="fade-up">
                         <ul class="list-unstyled">
                             <li class="mb-3 text-center">
-                                <strong class="d-block mb-3 ">Profile Image</strong>
+                                <strong class="d-block mb-3 ">Update Profile Image</strong>
                                 <input type="file" name="user_image" id="file" class="file" onchange="readURL(this)">
                                 <label for="file"
                                     class="border border-primary border-1 position-relative rounded-circle mx-auto">
-                                    <img src="/assets/img/undraw_svg_4.svg" width="256" height="256" alt="User Image"
+                                    <img src="{% if userImage != None %}/media/{{ userImage}}{% else %}/assets/img/undraw_svg_4.svg{% endif %}" width="256" height="256" alt="User Image"
                                         id="upload_image">
                                     <button type="button" class="btn btn-sm btn-primary rounded-circle reset-btn"
                                         onclick="clearInput()">Reset</button>
@@ -123,60 +123,47 @@ Welcome to django blog
                         </ul>
                     </div>
 
-                    <div class="col-md-6 mb-5 mb-md-0" data-aos="fade-up">
+                    <div class="col-md-6 mb-5 mb-md-0 order-2" data-aos="fade-up">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-md-6 form-group">
                                 <div class="form-floating">
-                                    <input type="text" class="form-control" id="firstName" name="firstName"
+                                    <input type="text" value="{{request.user.first_name}}" class="form-control" id="firstName" name="firstName"
                                         placeholder="First Name" required>
                                     <label for="firstName">First Name</label>
                                 </div>
                             </div>
                             <div class="col-md-6 form-group mt-3 mt-md-0">
                                 <div class="form-floating">
-                                    <input type="text" class="form-control" id="lastName" name="lastName"
+                                    <input type="text" value="{{request.user.last_name}}" class="form-control" id="lastName" name="lastName"
                                         placeholder="Last Name" required>
                                     <label for="lastName">Last Name</label>
                                 </div>
                             </div>
                             <div class="col-md-12 form-group mt-3">
                                 <div class="form-floating">
-                                    <input type="text" class="form-control" id="signup_username" name="username"
-                                        placeholder="your user name">
+                                    <input type="text" value="{{request.user.username}}" class="form-control" id="signup_username" name="username"
+                                        placeholder="your username">
                                     <label for="signup_username">Username (Only Alphanumeric)</label>
                                 </div>
                             </div>
                             <div class="col-md-12 form-group mt-3">
                                 <div class="form-floating">
-                                    <input type="email" class="form-control" id="user_email" name="email"
-                                        placeholder="name@example.com">
+                                    <input type="email" value="{{request.user.email}}" class="form-control" id="user_email" name="email"
+                                        placeholder="name@example.com" disabled readonly >
                                     <label for="user_email">Email address</label>
+                                    <div id="username_help" class="form-text text-success"> * email address verified</div>
                                 </div>
                             </div>
-                            <div class="col-md-12 form-group mt-3">
-                                <div class="form-floating">
-                                    <input type="password" class="form-control" id="password1" name="password1"
-                                        placeholder="password">
-                                    <label for="password1">Choose a Password</label>
-                                </div>
-                            </div>
-                            <div class="col-md-12 form-group mt-3">
-                                <div class="form-floating">
-                                    <input type="password" class="form-control" id="password2" name="password2"
-                                        placeholder="password">
-                                    <label for="password2">Confirm Password</label>
-                                </div>
-                            </div>
-
-                            <div class="col-md-12 mb-3">
+                            <div class="col-md-12 mb-3" style="min-height: 70px;">
                                 <div class="loading">Loading</div>
                                 <div class="error-message"></div>
-                                <div class="sent-message">User successfully Created</div>
+                                <div class="sent-message">Profile Successfully Updated</div>
                             </div>
 
-                            <div class="col-md-6 form-group">
-                                <input type="submit" class="btn btn-primary d-block w-100" value="Sign Up Now">
+                            <div class="col-md-6 form-group d-flex">
+                                <input id="form_reset" type="reset" class="btn mx-2 btn-primary d-block w-100" value="Reset" onclick="clearForm()" disabled>
+                                <input id="form_submit" type="submit" class="btn mx-2 btn-primary d-block w-100" value="Update Profile" disabled>
                             </div>
                         </div>
                     </div>
@@ -323,19 +310,31 @@ Welcome to django blog
 <script src="/assets/vendor/email-form/signup.js"></script>
 <script>
     function readURL(input) {
-        // console.log('log')
         if (input.files && input.files[0]) {
             var reader = new FileReader();
-            // console.log('log')
             reader.onload = function (e) {
                 document.getElementById("upload_image").setAttribute('src', e.target.result)
+                document.querySelector('#form_submit').disabled = false
+                document.querySelector('#form_reset').disabled = false
             };
             reader.readAsDataURL(input.files[0]);
         }
     }
+    document.querySelectorAll('form input').forEach((elem,key) => {
+        elem.addEventListener('change', e => {
+            document.querySelector('#form_submit').disabled = false
+            document.querySelector('#form_reset').disabled = false
+        })
+    })
     function clearInput() {
+        // document.querySelector('#form_submit').disabled = true
         document.getElementById("file").value = ''
-        document.getElementById("upload_image").setAttribute('src', "/assets/img/undraw_svg_4.svg")
+        document.getElementById("upload_image").setAttribute('src', "{% if userImage != None %}/media/{{ userImage}}{% else %}/assets/img/undraw_svg_4.svg{% endif %}")
+    }
+    function clearForm(){
+        document.querySelector('#form_submit').disabled = true
+        document.querySelector('#form_reset').disabled = true
+        document.getElementById("upload_image").setAttribute('src', "{% if userImage != None %}/media/{{ userImage}}{% else %}/assets/img/undraw_svg_4.svg{% endif %}")
     }
 </script>
 

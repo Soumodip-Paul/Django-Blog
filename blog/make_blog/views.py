@@ -1,3 +1,4 @@
+from django.http.request import HttpRequest
 from django.http.response import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
@@ -5,15 +6,15 @@ from django.contrib.auth import login,logout,authenticate
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from bs4 import BeautifulSoup
-from .models import Blog, BlogCategory, Comment, ContactClass, Images
+from .models import Blog, BlogCategory, Comment, ContactClass, Images, UserModel
 from .utils import isEmail, pretty_date, prettyFilter, paginateResults
 
 ResultPerPage = 6
 
-def index(req):
+def index(req: HttpRequest):
     return render(req,'index.html')
 
-def blog(req):
+def blog(req: HttpRequest):
     posted_blogs = Blog.objects.filter(blog_status='p').order_by('-blog_date')
     resultPage = paginateResults(req,posted_blogs,ResultPerPage,'blogvalue')
     blogs = []
@@ -21,7 +22,8 @@ def blog(req):
         blogs.append(blog)
     blogs = prettyFilter(blogs)
     return render(req,'blog.html',{'blogs' : blogs, 'pages': range(resultPage.pages), 'p': resultPage.p })
-def blogpost(req,id):
+
+def blogpost(req: HttpRequest,id):
     try:
         blog_categories = BlogCategory.objects.all().order_by('-date')
         categories = []
@@ -39,13 +41,13 @@ def blogpost(req,id):
     except:
         raise Http404("Page not found error")
 
-def features(req):
+def features(req: HttpRequest):
     return render(req,'features.html')
 
-def pricing(req):
+def pricing(req: HttpRequest):
     return render(req,'pricing.html')
 
-def contact(req):
+def contact(req: HttpRequest):
     if req.method == 'POST':
         credentials = req.POST
         contactDetails = ContactClass(query_desc=credentials.get('message'),customer_name=credentials.get('name'),customer_email=credentials.get('email'),query_subject=credentials.get('subject'), date = timezone.now())
@@ -53,10 +55,10 @@ def contact(req):
         return HttpResponse('OK')
     return render(req,'contact.html')
 
-def blog_single(req):
+def blog_single(req: HttpRequest):
     return render(req,'blog-single.html')
 
-def category(req,id):
+def category(req: HttpRequest,id):
     posted_blogs = Blog.objects.filter(blog_category__category_url=id,blog_status='p').order_by('-blog_date')
     blogs = []
     results = paginateResults(req,posted_blogs,ResultPerPage,'blogcategoryvalue')
@@ -65,10 +67,11 @@ def category(req,id):
     blogs = prettyFilter(blogs)
     return render(req,'blog.html',{'blogs' : blogs, 'pages': range(results.pages), 'p':  results.p })
 
-def signUp(req):
+def signUp(req: HttpRequest):
     if req.method == 'POST':
         try:
             body = req.POST
+            image_file = req.FILES.get('user_image')
             fname = body['firstName']
             lname = body['lastName']
             username = body['username']
@@ -82,6 +85,8 @@ def signUp(req):
                 user.first_name = fname
                 user.last_name = lname
                 user.save()
+                user_model = UserModel.objects.create(user=user,avatar_image=image_file)
+                user_model.save()
             elif not username.isalnum(): raise ValueError("Username must be alphanumeric")
             elif not isEmail(email): raise ValueError("Enter a vaid email")
             elif password1!=password2: raise ValueError("passwords donot match")
@@ -96,7 +101,7 @@ def signUp(req):
         return HttpResponse('OK')
     return render(req,'signup.html')
 
-def loginUser(req):
+def loginUser(req: HttpRequest):
     if req.method == 'POST':
         username = req.POST.get('username')
         password = req.POST.get('password')
@@ -107,11 +112,11 @@ def loginUser(req):
         else: return HttpResponseBadRequest('Incorrect Credentials')
     return render(req,'login.html') if not req.user.is_authenticated else redirect('/') 
 
-def logoutUser(req):
+def logoutUser(req: HttpRequest):
     logout(req)
     return redirect(req.META.get('HTTP_REFERER') or '/')
 
-def search(req):
+def search(req: HttpRequest):
     qString = req.GET.get('q')
     results = []
     if qString != None and len(qString) != 0:
@@ -123,23 +128,7 @@ def search(req):
         return render(req, 'search.html', {'qs': qString or '' , 'blogs': prettyFilter(results.listItem), 'pages':range(results.pages), 'p': results.p })
     return render(req,'search.html',{})
 
-@csrf_exempt
-def uploadImage(request):
-    if request.method == 'POST' and request.user.is_authenticated: # and str(request.headers['Origin']).split(':')[0] in ALLOWED_HOSTS:
-        try:
-            file = request.FILES.get('file') or request.FILES.get('image')
-            product = Images.objects.create(image=file)
-            product.save()
-            return JsonResponse({'location': '/media/' + str(product.image)})
-        except KeyError:
-            return HttpResponseBadRequest("File not found")
-        except:
-            return HttpResponse("Internal server error", status=500)
-    if request.user.is_authenticated:
-        return render(request,'s.html') 
-    else:  raise Http404("Page not found")
-
-def postComment(req):
+def postComment(req: HttpRequest):
     if req.method == 'POST' and req.user.is_authenticated and req.POST.get('comment') is not None and req.POST.get('postId') is not None :
         try: 
             Text = req.POST['comment']
@@ -153,3 +142,30 @@ def postComment(req):
             print(e)
             return HttpResponseBadRequest("Bad request")
     return redirect(req.META['HTTP_REFERER'] or '/')
+
+## to do a profile component for user
+def userProfile(req: HttpRequest):
+    if req.method == "GET":
+        userImage = None
+        if req.user.is_authenticated:
+            userModel = UserModel.objects.get(user=req.user)
+            userImage = userModel.avatar_image
+        return render(req,'profile.html',{'userImage': userImage}) if req.user.is_authenticated else redirect('blogLogin')
+    if req.method == "POST":
+        return HttpResponse('User name not available', status=400)
+
+@csrf_exempt
+def uploadImage(request: HttpRequest):
+    if request.method == 'POST' and request.user.is_authenticated: # and str(request.headers['Origin']).split(':')[0] in ALLOWED_HOSTS:
+        try:
+            file = request.FILES.get('file') or request.FILES.get('image')
+            product = Images.objects.create(image=file)
+            product.save()
+            return JsonResponse({'location': '/media/' + str(product.image)})
+        except KeyError:
+            return HttpResponseBadRequest("File not found")
+        except:
+            return HttpResponse("Internal server error", status=500)
+    if request.user.is_authenticated:
+        return render(request,'s.html') 
+    else:  raise Http404("Page not found")

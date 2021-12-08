@@ -1,15 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Image Upload</title>
+    <link href="/assets/img/favicon.png" rel="icon">
+    <link href="/assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+    <style>
+        .file {
+            opacity: 0;
+            width: 0.1px;
+            height: 0.1px;
+            position: absolute;
+        }
+
+        .file-input label {
+            cursor: pointer;
+        }
+
+        .file-input label img {
+            transition: transform .2s ease-out;
+        }
+
+        .file-input label img:hover {
+            transform: scale(1.05);
+        }
+
+        .file-name {
+            display: none;
+            position: absolute;
+            bottom: -35px;
+            left: 10px;
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        input:hover+label,
+        input:focus+label {
+            transform: scale(1.02);
+        }
+
+        .submit-button {
+            width: 120px;
+            margin: auto;
+            margin-bottom: 1rem;
+            display: block;
+            border: none;
+            padding: 1rem 0;
+            border-radius: 50rem;
+            text-transform: capitalize;
+            background: linear-gradient(40deg, #ff6ec4, #7873f5);
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
 </head>
+
 <body>
+    <h3 style="text-align: center;">Select an Image to upload</h3>
     <form action="/upload-image" method="post" enctype="multipart/form-data">
-        <input type="file" accept="image/*" name="image" id="image">
-        <button type="submit">submit</button>
+        <div class="file-input" style="overflow: hidden; padding: 0; margin: 2rem auto ; width: 512px;">
+            <input type="file" name="image" id="file" class="file" onchange="readURL(this)" required>
+            <label for="file">
+                <img style="max-width: 512px; height: auto;" src="/assets/img/undraw_svg_1.svg" id="upload_image" alt="Image Icon">
+            </label>
+        </div>
+        <div>
+            <button type="submit" class="submit-button">submit</button>
+            <button type="reset" class="submit-button" onclick="upload_image.src='/assets/img/undraw_svg_1.svg'">reset</button>
+        </div>
     </form>
 </body>
+<script>
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById("upload_image").setAttribute('src', e.target.result)
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+
 </html>

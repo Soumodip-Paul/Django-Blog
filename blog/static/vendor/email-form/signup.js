@@ -21,6 +21,7 @@
 			thisForm.querySelector('.sent-message').classList.remove('d-block');
 
 			let formData = new FormData(thisForm);
+			formData.append('file', document.querySelector('input[type="file"]').files[0])
 			if (recaptcha) {
 				if (typeof grecaptcha !== "undefined") {
 					grecaptcha.ready(function () {
@@ -47,6 +48,10 @@
 		thisForm.querySelector('.loading').classList.remove('d-block');
 		thisForm.querySelector('.error-message').innerHTML = error;
 		thisForm.querySelector('.error-message').classList.add('d-block');
+		setTimeout(() => {
+			thisForm.querySelector('.error-message').classList.remove('d-block');
+			thisForm.querySelector('.error-message').innerHTML = '';
+		},3000)
 	}
 
 	async function form_submit(thisForm, action, formData) {
@@ -58,14 +63,23 @@
 			})
 
 			const data = await response.text()
-			if (response.ok) {
+			if (response.ok && !response.redirected) {
 				thisForm.querySelector('.loading').classList.remove('d-block');
 				if (data.trim() == 'OK') {
 					thisForm.querySelector('.sent-message').classList.add('d-block');
+					setTimeout(() => thisForm.querySelector('.sent-message').classList.remove('d-block'),3000)
 					thisForm.reset();
 				} else {
 					throw new Error(data ? data : 'Form submission failed and no error message returned from: ' + action);
 				}
+			}
+			else if (response.redirected) {
+				thisForm.querySelector('.loading').classList.remove('d-block');
+				thisForm.querySelector('.sent-message').classList.add('d-block');
+				setTimeout(() => {
+					thisForm.querySelector('.sent-message').classList.remove('d-block')
+					window.location.href = response.url
+				},3000)
 			}
 			else throw new Error(`${data}`)
 

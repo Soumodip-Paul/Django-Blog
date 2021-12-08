@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.http.request import HttpRequest
 from .models import Comment, ContactClass,BlogCategory,Blog,UserModel,Images
 from .utils import urlify
 
@@ -9,15 +10,15 @@ admin.site.index_title = "Welcome to Cool Developer Admin Portal"
 admin.site.register(Images)
 
 @admin.action(description='Mark selected content as published')
-def make_published(modeladmin, request, queryset):
+def make_published(modeladmin, request: HttpRequest, queryset):
     queryset.update(blog_status='p')  
 
 @admin.action(description='Draft Content')
-def make_draft(modeladmin, request, queryset):
+def make_draft(modeladmin, request: HttpRequest, queryset):
     queryset.update(blog_status='d')
 
 @admin.action(description='Withdraw Content')
-def withdrawContent(modeladmin, request, queryset):
+def withdrawContent(modeladmin, request: HttpRequest, queryset):
     queryset.update(blog_status='w')
 
 @admin.register(UserModel)
@@ -26,9 +27,12 @@ class UserModelClass(admin.ModelAdmin):
 
 @admin.register(ContactClass)
 class ContactModel(admin.ModelAdmin):
-    list_display = ["query_id","customer_email","customer_name","query_subject","date"]
+    list_display = ["query_id","customer_email","query_subject","query_resolved","date"]
     list_display_links = ["query_id","customer_email"]
-    search_fields = ["query_id","customer_email","customer_name","query_subject","date"]
+    list_filter = ['query_resolved']
+    search_fields = ["query_id","customer_email","customer_name","query_subject","date","query_resolved"]
+    def has_add_permission(self, request: HttpRequest) -> bool:
+        return False
 
 @admin.register(BlogCategory)
 class BlogCategoryAdmin(admin.ModelAdmin):
@@ -44,12 +48,12 @@ class BlogAdmin(admin.ModelAdmin):
     search_fields = ["blog_id","blog_title", "blog_status","blog_category","blog_date"]
     list_editable = ["blog_status","blog_category"]
     actions = [make_published, make_draft, withdrawContent]
-    def get_queryset(self, request):
+    def get_queryset(self, request: HttpRequest):
         qs = super(BlogAdmin, self).get_queryset(request)
         if request.user.is_superuser:
             return qs
         return qs.filter(blog_author=request.user)
-    def save_model(self, request, obj, form, change):
+    def save_model(self, request: HttpRequest, obj, form, change):
         # associating the current logged in user to the client_id
         obj.blog_author = request.user
         if obj.blog_url == '':
@@ -66,5 +70,7 @@ class BlogAdmin(admin.ModelAdmin):
 class CommentAdmin(admin.ModelAdmin):
     list_display = ['id', 'user', 'timestamp']
     search_fields = ['id', 'user', 'timestamp', 'parent']
-    def has_change_permission(self, request, obj = ...) -> bool:
+    def has_change_permission(self, request: HttpRequest, obj = ...) -> bool:
+        return False
+    def has_add_permission(self, request: HttpRequest) -> bool:
         return False

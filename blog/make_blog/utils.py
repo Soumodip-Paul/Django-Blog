@@ -75,7 +75,7 @@ def urlify(s):
 
     return s
  
-def isEmail(email):
+def isEmail(email) -> bool:
     if(re.fullmatch(regex, email)):
         return True
     else:

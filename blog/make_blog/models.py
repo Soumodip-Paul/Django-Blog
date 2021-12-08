@@ -19,6 +19,7 @@ def get_sentinel_category():
 # Create your models here.
 class ContactClass(models.Model):
     query_id = models.AutoField(primary_key=True)
+    query_resolved = models.BooleanField(default=False)
     customer_name = models.CharField(default='', max_length=255)
     customer_email = models.EmailField()
     query_subject = models.CharField(default='',max_length=225)
@@ -38,7 +39,7 @@ class Blog(models.Model):
     blog_id = models.AutoField(primary_key=True)
     blog_title = models.CharField(default="",max_length=512)
     blog_url = models.SlugField(default="",max_length=512,unique=True,blank=True, help_text="Leave blank if you donot want custom url")
-    blog_image = models.ImageField(upload_to="blog/%Y/%m/%d/image", default="", null=True,blank=True)
+    blog_image = models.ImageField(upload_to="blog/image/%Y/%m/%d", default="", null=True,blank=True)
     blog_status = models.CharField(default='d',max_length=1,choices=BLOG_CHOICES)
     blog_category = models.ForeignKey(BlogCategory,on_delete=models.SET(get_sentinel_category))
     blog_author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET(get_sentinel_user),editable=False)
@@ -47,14 +48,13 @@ class Blog(models.Model):
     def __str__(self) -> str:
         return self.blog_url
 
-
 class UserModel(models.Model):
     user = models.OneToOneField(User,on_delete=models.SET(get_sentinel_user))
-    avatar_image = models.ImageField(upload_to="user/%Y/%m/%d/images",default="",null=True,blank=True)
+    avatar_image = models.ImageField(upload_to="user/images/%Y/%m/%d",default="",null=True,blank=True)
 
 class Images(models.Model):
     image_id = models.AutoField(primary_key=True)
-    image = models.ImageField(default='',upload_to='blog/%Y/%m/%d/image')
+    image = models.ImageField(default='',upload_to='blog/image/%Y/%m/%d')
     def __str__(self) -> str:
         return str(self.image_id)
 

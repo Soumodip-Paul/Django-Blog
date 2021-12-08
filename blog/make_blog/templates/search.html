@@ -27,14 +27,24 @@ Welcome to django blog
 					<div class="row justify-content-center">
 						<div class="col-md-7 text-center hero-text">
 							<h1 data-aos="fade-up" data-aos-delay="">Search Results</h1>
-								<form action="/search" method="get" class="input-group mb-3">
-									<input type="text" class="form-control" placeholder="Search Here..." aria-label="Recipient's username" aria-describedby="search_button" name="q" value="{{qs}}">
-									<button class="btn btn-primary" style="padding-top: 0px !important; padding-bottom: 0px !important;" type="submit" id="search_button">
-										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: var(--bs-white);"><path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"></path></svg>
-									</button>
-								</form>  
+							<form action="/search" method="get" class="input-group mb-3">
+								<input type="text" class="form-control" placeholder="Search Here..."
+									aria-label="Recipient's username" aria-describedby="search_button" name="q"
+									value="{{qs}}">
+								<button class="btn btn-primary"
+									style="padding-top: 0px !important; padding-bottom: 0px !important;" type="submit"
+									id="search_button">
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+										style="fill: var(--bs-white);">
+										<path
+											d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z">
+										</path>
+									</svg>
+								</button>
+							</form>
 							{% if qs|length != 0 %}
-							<p class="mb-5" data-aos="fade-up" data-aos-delay="100"> Your search reasults for "{{qs}}"</p>
+							<p class="mb-5" data-aos="fade-up" data-aos-delay="100"> Your search reasults for "{{qs}}"
+							</p>
 							{% endif %}
 						</div>
 					</div>
@@ -44,19 +54,21 @@ Welcome to django blog
 
 	</section>
 	<!-- ======= Blog List Section ======= -->
-	
+
 	<section class="section">
-		<div class="container">            
+		<div class="container">
 			{% if blogs|length != 0 %}
 			<div class="row mb-5">
 				{% for blog in blogs %}
 				<div class="col-md-4">
 					<div class="post-entry">
 						<a href="/blog/{{blog.blog_url}}" class="d-block mb-4">
-							<img src="{% if blog.blog_image != '' %}/media/{{blog.blog_image}}{% else %}/assets/img/img_1.jpg{% endif %}" alt="Image" class="img-fluid">
+							<img src="{% if blog.blog_image != '' %}/media/{{blog.blog_image}}{% else %}/assets/img/img_1.jpg{% endif %}"
+								alt="Image" class="img-fluid">
 						</a>
 						<div class="post-text">
-							<span class="post-meta">{{blog.blog_date}} &bullet; By <a href="#">{{blog.blog_author}}</a></span>
+							<span class="post-meta">{{blog.blog_date}} &bullet; By <a
+									href="#">{{blog.blog_author}}</a></span>
 							<h3><a href="/blog/{{blog.blog_url}}">{{blog.blog_title}}</a></h3>
 							<p>{{blog.blog_content}}{% if blog.blog_content|length > 119 %}...{% endif %}</p>
 							<p><a href="/blog/{{blog.blog_url}}" class="readmore">Read more</a></p>
@@ -64,30 +76,31 @@ Welcome to django blog
 					</div>
 				</div>
 				{% if forloop.counter|divisibleby:3 %}
-				</div>
-				<div class="row mb-5">
+			</div>
+			<div class="row mb-5">
 				{% endif %}
 				{% endfor %}
 			</div>
 			{% else %}
-			<h4 class="lead m-5 fst-italic text-center" style="font-family: 'Roboto', sans-serif;">No search results are available...</h4>
+			<h4 class="lead m-5 fst-italic text-center" style="font-family: 'Roboto', sans-serif;">No search results are
+				available...</h4>
 			{% endif %}
-			</div>
-			{% for page in pages %}
-			{% if forloop.counter == 1 %}
-			<div class="row">
-				<div class="col-12 text-center">
+		</div>
+		{% for page in pages %}
+		{% if forloop.counter == 1 %}
+		<div class="row">
+			<div class="col-12 text-center">
 				{% endif %}
-					{% if  p == page|add:1 %}
-					<span class="p-3 active text-primary">{{page|add:1}}</span>
-					{% else %}
-					<a href="?p={{page|add:1}}" class="p-3">{{page|add:1}}</a>
-					{% endif %}
-					{% if forloop.last %}
-				</div>
-			</div> 
-			{% endif %}
-			{% endfor %}
+				{% if p == page|add:1 %}
+				<span class="p-3 active text-primary">{{page|add:1}}</span>
+				{% else %}
+				<a href="?p={{page|add:1}}" class="p-3">{{page|add:1}}</a>
+				{% endif %}
+				{% if forloop.last %}
+			</div>
+		</div>
+		{% endif %}
+		{% endfor %}
 
 	</section>
 
@@ -100,10 +113,10 @@ Welcome to django blog
 				</div>
 				<div class="col-md-5 text-center text-md-end">
 					<p><a href="#" class="btn d-inline-flex align-items-center"><i class="bx bxl-apple"></i>
-						<span>App store</span></a> <a href="#" class="btn d-inline-flex align-items-center">
+							<span>App store</span></a> <a href="#" class="btn d-inline-flex align-items-center">
 							<i class="bx bxl-play-store"></i>
-						<span>Google play</span>
-					</a></p>
+							<span>Google play</span>
+						</a></p>
 				</div>
 			</div>
 		</div>
