@@ -21,7 +21,8 @@
 			thisForm.querySelector('.sent-message').classList.remove('d-block');
 
 			let formData = new FormData(thisForm);
-			formData.append('file', document.querySelector('input[type="file"]').files[0])
+			if(document.querySelector('input[type="file"]')) formData.append('file', document.querySelector('input[type="file"]').files[0])
+
 			if (recaptcha) {
 				if (typeof grecaptcha !== "undefined") {
 					grecaptcha.ready(function () {
@@ -67,7 +68,7 @@
 				thisForm.querySelector('.loading').classList.remove('d-block');
 				if (data.trim() == 'OK') {
 					thisForm.querySelector('.sent-message').classList.add('d-block');
-					setTimeout(() => thisForm.querySelector('.sent-message').classList.remove('d-block'),3000)
+					setTimeout(() => thisForm.querySelector('.sent-message').classList.remove('d-block'),1000)
 					thisForm.reset();
 				} else {
 					throw new Error(data ? data : 'Form submission failed and no error message returned from: ' + action);

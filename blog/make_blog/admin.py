@@ -64,7 +64,11 @@ class BlogAdmin(admin.ModelAdmin):
                 obj.blog_url = obj.blog_url + "-" + str(Blog.objects.count() + 1)
         super().save_model(request, obj, form, change)
     class Media: 
+        # css = ["css/blog_style.css"]
         js = ["js/tinymce.js"]
+        css = {
+        'all': ("css/blog_style.css",)
+         }
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
@@ -74,3 +78,5 @@ class CommentAdmin(admin.ModelAdmin):
         return False
     def has_add_permission(self, request: HttpRequest) -> bool:
         return False
+    def has_delete_permission(self, request: HttpRequest, obj = ...) -> bool:
+        return True

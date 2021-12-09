@@ -82,7 +82,6 @@ def isEmail(email) -> bool:
         return False
         
 def paginateResults(req, filter_list, ResultPerPage:int, Redirect:str) -> Pages:
-    print(filter_list)
     pages = ceil(len(filter_list) / ResultPerPage)
     p = int(req.GET.get('p') or 1)
     if pages > 0 and p > pages or p < 1: return redirect(Redirect)

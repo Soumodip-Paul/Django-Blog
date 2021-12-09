@@ -1,5 +1,5 @@
-from django.http.request import HttpRequest
 from django.http.response import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
+from django.http.request import HttpRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
@@ -143,16 +143,83 @@ def postComment(req: HttpRequest):
             return HttpResponseBadRequest("Bad request")
     return redirect(req.META['HTTP_REFERER'] or '/')
 
-## to do a profile component for user
 def userProfile(req: HttpRequest):
     if req.method == "GET":
         userImage = None
         if req.user.is_authenticated:
             userModel = UserModel.objects.get(user=req.user)
-            userImage = userModel.avatar_image
+            userImage = userModel.avatar_image if str(userModel.avatar_image) != '' else None
         return render(req,'profile.html',{'userImage': userImage}) if req.user.is_authenticated else redirect('blogLogin')
-    if req.method == "POST":
-        return HttpResponse('User name not available', status=400)
+    elif req.method == "POST" and req.user.is_authenticated:
+        try:
+            user = User.objects.get(username=req.user.username)
+            if req.POST.get('username') and req.POST['username'] != req.user.username and len(User.objects.filter(username=req.POST['username'])) != 0:
+                raise NameError('username not available')
+            else:
+                user.username = req.POST.get('username') or user.username
+            if req.FILES.get('user_image'):
+                userModel = UserModel.objects.filter(user=req.user)
+                if len(userModel) != 0:
+                    model = userModel[0]
+                    model.avatar_image = req.FILES['user_image']
+                    model.save()
+            elif req.POST['removeImage']:
+                userModel = UserModel.objects.filter(user=req.user)
+                if len(userModel) != 0:
+                    model = userModel[0]
+                    model.avatar_image = None
+                    model.save()
+            user.first_name = req.POST.get('firstName') or user.first_name
+            user.last_name = req.POST.get('lastName') or user.last_name
+            user.save()
+            return redirect('blogindex')
+        except ValueError as e:
+            return HttpResponseBadRequest(e)
+        except NameError as e:
+            return HttpResponseForbidden(e)
+        except Exception as e:
+            print(e)
+            return HttpResponse('Internal server error',status=500)
+    else: return HttpResponseForbidden("Forbidden")
+
+def resetPassword(req: HttpRequest):
+    if req.method == 'GET':
+        if not req.user.is_authenticated:
+            return redirect('blogindex')
+        userImage = None
+        try:
+            userImage = UserModel.objects.get(user = req.user).avatar_image
+            print(userImage)
+        except Exception as e:
+            print(e)
+            userImage = None
+        return render(req,'reset-password.html', {'userImage':userImage})
+    if req.method == 'POST':
+        if not req.user.is_authenticated:
+            return HttpResponseForbidden('You need to login to reset password')
+
+        if not ( req.POST.get('password') and req.POST.get('new_password') and req.POST.get('confirm_new_password')):
+            return HttpResponseBadRequest('Request not valid') 
+
+        if req.POST['new_password'] != req.POST['confirm_new_password']: 
+            return HttpResponseBadRequest('new password and confirm new password do not match')
+
+        try: 
+            user = User.objects.get(username = req.user.username)
+            validate_password = authenticate(username=user.username,password=req.POST['password'])
+            
+            if validate_password == None:
+                return HttpResponseForbidden('Invalid Credentials')
+            
+            user.set_password(req.POST['new_password'])
+            user.save()
+            login(req,user)
+            return redirect('blogindex')
+
+        except User.DoesNotExist as e:
+           return HttpResponseForbidden('User does not exists')
+        except Exception as e:
+            return HttpResponse('Internal Server Error', status=500)
 
 @csrf_exempt
 def uploadImage(request: HttpRequest):

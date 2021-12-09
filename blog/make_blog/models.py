@@ -51,6 +51,8 @@ class Blog(models.Model):
 class UserModel(models.Model):
     user = models.OneToOneField(User,on_delete=models.SET(get_sentinel_user))
     avatar_image = models.ImageField(upload_to="user/images/%Y/%m/%d",default="",null=True,blank=True)
+    def __str__(self) -> str:
+        return str(self.user)
 
 class Images(models.Model):
     image_id = models.AutoField(primary_key=True)

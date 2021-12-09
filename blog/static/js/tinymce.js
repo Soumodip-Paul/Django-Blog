@@ -19,10 +19,19 @@ tinymce.init({
   autosave_prefix: '{path}{query}-{id}-',
   autosave_restore_when_empty: false,
   autosave_retention: '2m',
+  font_formats:
+    "Andale Mono=andale mono,times; Arial=arial,helvetica,sans-serif; Arial Black=arial black,avant garde; Book Antiqua=book antiqua,palatino; Comic Sans MS=comic sans ms,sans-serif; Courier New=courier new,courier; Georgia=georgia,palatino; Helvetica=helvetica; Impact=impact,chicago; Roboto='Roboto'; Symbol=symbol; Tahoma=tahoma,arial,helvetica,sans-serif; Terminal=terminal,monaco; Times New Roman=times new roman,times; Trebuchet MS=trebuchet ms,geneva; Verdana=verdana,geneva; Webdings=webdings; Wingdings=wingdings,zapf dingbats",
   image_advtab: true,
   link_list: [
-    { title: 'My page 1', value: 'https://www.tiny.cloud' },
+    { title: 'Home', value: 'https://www.tiny.cloud' },
     { title: 'My page 2', value: 'http://www.moxiecode.com' }
+  ],
+  link_class_list: [
+    {title: 'None', value: ''},
+    {title: 'Text', value: 'text-primary'},
+    {title: 'Button', value: 'btn btn-primary'},
+    {title: 'Button Small', value: 'btn btn-sm btn-primary'},
+    // {title: 'Other Internal Link', value: 'int_other_link'}
   ],
   image_list: [
     { title: 'My page 1', value: 'https://www.tiny.cloud' },
@@ -30,7 +39,8 @@ tinymce.init({
   ],
   image_class_list: [
     { title: 'None', value: '' },
-    { title: 'Auto Image Fit', value: 'w-100 h-auto' }
+    { title: 'Auto Image Fit', value: 'w-100 h-auto' },
+    { title: 'Rounded', value: 'w-100 h-auto rounded-circle' }
   ],
   importcss_append: true,
   file_picker_callback: function (callback, value, meta) {
@@ -64,7 +74,10 @@ tinymce.init({
   contextmenu: 'link image imagetools table',
   skin: useDarkMode ? 'oxide-dark' : 'oxide',
   content_css: useDarkMode ? 'dark' : 'default',
-  content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+  content_style: `
+  @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+  body { font-family:Helvetica,Arial,sans-serif; font-size:14px }
+  `
  });
 
 }

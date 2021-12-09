@@ -13,6 +13,7 @@ urlpatterns = [
     path('signup', views.signUp,name='userSignUp'),
     path('profile', views.userProfile,name='userProfile'),
     path('search', views.search,name='blogsearch'),
+    path('reset-password', views.resetPassword,name='resetPassword'),
     path('post-comment', views.postComment,name='postComment'),
     path('upload-image', views.uploadImage,name='upload_image'),
     path('category/<str:id>', views.category,name='blogcategoryvalue'),
