@@ -50,13 +50,14 @@
 						<a class=" active" href="#"><span>{{request.user.first_name}} &nbsp;<i class="bi bi-chevron-down"></i></span>
 						</a>
 						<ul class="dropdown-menu">
-						  <li><a class="dropdown-item {% block blog_profile %}{% endblock %}" href="/profile">Profile</a></li>
-						  <li><hr class="dropdown-divider"></li>
-						  <li><a class="dropdown-item" href="/admin">Admin Panel</a></li>
-						  <li><a class="dropdown-item" href="/reset-password">Reset Password</a></li>
-						  {% if user.is_superuser %}
-						  {% endif %}
-						  <li><a class="dropdown-item" href="/logout">Log Out</a></li>
+							{% if userImage != None and userImage != '' %}<li><img src="/media/{{userImage}}" alt="Profile" width="72" height="72" class="mx-auto mb-2 d-block rounded-circle"></li>{% endif %}
+							<li><a class="dropdown-item {% block blog_profile %}{% endblock %}" href="/profile">Profile</a></li>
+							<li><hr class="dropdown-divider"></li>
+							<li><a class="dropdown-item" href="/admin">Admin Panel</a></li>
+							<li><a class="dropdown-item" href="/reset-password">Reset Password</a></li>
+							{% if user.is_superuser %}
+							{% endif %}
+							<li><a class="dropdown-item" href="/logout">Log Out</a></li>
 						</ul>
 					</li>
 					{% endif %}

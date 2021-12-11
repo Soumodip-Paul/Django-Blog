@@ -1,12 +1,12 @@
-from django.utils import timezone
-from django.shortcuts import redirect
 from bs4 import BeautifulSoup
 from datetime import datetime
+from django.http.response import HttpResponse
+from django.shortcuts import redirect
+from django.utils import timezone
 from math import ceil
 import re
 
 regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-
 
 class Pages:
     listItem = None
@@ -17,7 +17,17 @@ class Pages:
         self.pages =pages
         self.p = p  
 
-def pretty_date(time=False):
+def isEmail(email) -> bool:
+    if(re.fullmatch(regex, email)):
+        return True
+    else:
+        return False
+ 
+def InternalServerError(e: Exception) -> HttpResponse:
+    print(e)
+    return HttpResponse("Internal Server Error", status=500)
+
+def pretty_date(time=False) -> str:
     """
     Get a datetime object or a int() Epoch timestamp and return a
     pretty string like 'an hour ago', 'Yesterday', '3 months ago',
@@ -64,8 +74,14 @@ def prettyFilter(blogs):
         blog.blog_date = pretty_date(blog.blog_date)
         blog.blog_content = BeautifulSoup(blog.blog_content,"html.parser").get_text()[:120]
     return blogs
-
-def urlify(s):
+      
+def paginateResults(req, filter_list, ResultPerPage:int, Redirect:str) -> Pages:
+    pages = ceil(len(filter_list) / ResultPerPage)
+    p = int(req.GET.get('p') or 1)
+    if pages > 0 and p > pages or p < 1: return redirect(Redirect)
+    else : return Pages(listItem=filter_list[ (p - 1) * ResultPerPage: p * ResultPerPage],pages=pages,p=p)
+       
+def urlify(s) -> str:
 
     # Remove all non-word characters (everything except numbers and letters)
     s = re.sub(r"[^\w\s]", '', s)
@@ -74,16 +90,3 @@ def urlify(s):
     s = re.sub(r"\s+", '-', s)
 
     return s
- 
-def isEmail(email) -> bool:
-    if(re.fullmatch(regex, email)):
-        return True
-    else:
-        return False
-        
-def paginateResults(req, filter_list, ResultPerPage:int, Redirect:str) -> Pages:
-    pages = ceil(len(filter_list) / ResultPerPage)
-    p = int(req.GET.get('p') or 1)
-    if pages > 0 and p > pages or p < 1: return redirect(Redirect)
-    else : return Pages(listItem=filter_list[ (p - 1) * ResultPerPage: p * ResultPerPage],pages=pages,p=p)
-       

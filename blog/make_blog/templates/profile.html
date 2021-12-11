@@ -145,6 +145,13 @@ Welcome to django blog
                             </div>
                             <div class="col-md-12 form-group mt-3">
                                 <div class="form-floating">
+                                    <textarea type="text" class="form-control" id="about" name="about"
+                                        placeholder="about" >{{userAbout}}</textarea>
+                                    <label for="about">About</label>
+                                </div>
+                            </div>
+                            <div class="col-md-12 form-group mt-3">
+                                <div class="form-floating">
                                     <input type="text" value="{{request.user.username}}" class="form-control" id="signup_username" name="username"
                                         placeholder="your username">
                                     <label for="signup_username">Username (Only Alphanumeric)</label>
@@ -324,6 +331,12 @@ Welcome to django blog
         }
     }
     document.querySelectorAll('form input').forEach((elem,key) => {
+        elem.addEventListener('change', e => {
+            document.querySelector('#form_submit').disabled = false
+            document.querySelector('#form_reset').disabled = false
+        })
+    })
+    document.querySelectorAll('form textarea').forEach((elem,key) => {
         elem.addEventListener('change', e => {
             document.querySelector('#form_submit').disabled = false
             document.querySelector('#form_reset').disabled = false

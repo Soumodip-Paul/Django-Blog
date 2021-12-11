@@ -9,30 +9,17 @@ admin.site.site_title = " Cool Developer Admin Portal"
 admin.site.index_title = "Welcome to Cool Developer Admin Portal"
 admin.site.register(Images)
 
-@admin.action(description='Mark selected content as published')
-def make_published(modeladmin, request: HttpRequest, queryset):
-    queryset.update(blog_status='p')  
-
 @admin.action(description='Draft Content')
 def make_draft(modeladmin, request: HttpRequest, queryset):
     queryset.update(blog_status='d')
 
+@admin.action(description='Mark selected content as published')
+def make_published(modeladmin, request: HttpRequest, queryset):
+    queryset.update(blog_status='p')  
+
 @admin.action(description='Withdraw Content')
 def withdrawContent(modeladmin, request: HttpRequest, queryset):
     queryset.update(blog_status='w')
-
-@admin.register(UserModel)
-class UserModelClass(admin.ModelAdmin):
-    list_display = ['user','avatar_image']
-
-@admin.register(ContactClass)
-class ContactModel(admin.ModelAdmin):
-    list_display = ["query_id","customer_email","query_subject","query_resolved","date"]
-    list_display_links = ["query_id","customer_email"]
-    list_filter = ['query_resolved']
-    search_fields = ["query_id","customer_email","customer_name","query_subject","date","query_resolved"]
-    def has_add_permission(self, request: HttpRequest) -> bool:
-        return False
 
 @admin.register(BlogCategory)
 class BlogCategoryAdmin(admin.ModelAdmin):
@@ -53,7 +40,7 @@ class BlogAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         return qs.filter(blog_author=request.user)
-    def save_model(self, request: HttpRequest, obj, form, change):
+    def save_model(self, request: HttpRequest, obj: Blog, form, change):
         # associating the current logged in user to the client_id
         obj.blog_author = request.user
         if obj.blog_url == '':
@@ -80,3 +67,16 @@ class CommentAdmin(admin.ModelAdmin):
         return False
     def has_delete_permission(self, request: HttpRequest, obj = ...) -> bool:
         return True
+
+@admin.register(ContactClass)
+class ContactModel(admin.ModelAdmin):
+    list_display = ["query_id","customer_email","query_subject","query_resolved","date"]
+    list_display_links = ["query_id","customer_email"]
+    list_filter = ['query_resolved']
+    search_fields = ["query_id","customer_email","customer_name","query_subject","date","query_resolved"]
+    def has_add_permission(self, request: HttpRequest) -> bool:
+        return False
+
+@admin.register(UserModel)
+class UserModelClass(admin.ModelAdmin):
+    list_display = ['user','avatar_image']

@@ -44,7 +44,7 @@
 
         .submit-button {
             width: 120px;
-            margin: auto;
+            margin: 1rem auto;
             margin-bottom: 1rem;
             display: block;
             border: none;
@@ -56,16 +56,22 @@
             font-weight: bold;
             cursor: pointer;
         }
+        body {
+            box-sizing: border-box;
+            margin: 0;
+        }
     </style>
 </head>
 
 <body>
     <h3 style="text-align: center;">Select an Image to upload</h3>
     <form action="/upload-image" method="post" enctype="multipart/form-data">
-        <div class="file-input" style="overflow: hidden; padding: 0; margin: 2rem auto ; width: 512px;">
+        <div class="file-input">
             <input type="file" name="image" id="file" class="file" onchange="readURL(this)" required>
             <label for="file">
-                <img style="max-width: 512px; height: auto;" src="/assets/img/undraw_svg_1.svg" id="upload_image" alt="Image Icon">
+                <div style="margin: auto;width: 90vw;max-width: 512px;border: 1px solid;overflow: hidden;">
+                    <img style="width: 90vw;max-width: 512px;height: auto;" src="/assets/img/undraw_svg_1.svg" id="upload_image" alt="Image Icon">
+                </div>
             </label>
         </div>
         <div>

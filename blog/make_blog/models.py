@@ -1,8 +1,7 @@
-from django.db import models
-from django.conf import settings
-from django.utils.timezone import now
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
+from django.db import models
+from django.utils.timezone import now
 
 BLOG_CHOICES = [
     ('d','draft'),
@@ -18,6 +17,7 @@ def get_sentinel_category():
 
 # Create your models here.
 class ContactClass(models.Model):
+    """ Model to Store User Queries in DataBase """
     query_id = models.AutoField(primary_key=True)
     query_resolved = models.BooleanField(default=False)
     customer_name = models.CharField(default='', max_length=255)
@@ -29,6 +29,7 @@ class ContactClass(models.Model):
         return str(self.query_id) + " " + self.customer_email
 
 class BlogCategory(models.Model):
+    """ Models to create and store Categories of Blogs """
     category_name = models.CharField(default='',max_length=255,unique=True)
     category_url = models.SlugField(max_length=255,unique=True)
     date = models.DateTimeField()
@@ -36,31 +37,38 @@ class BlogCategory(models.Model):
         return self.category_url
 
 class Blog(models.Model):
+    """ Model for Blog Posts to store in Database
+        Contains `blog_id`, `blog_title`, `blog_url`, `blog_image`, `blog_status`, `blog_category`, `blog_author`, `blog_date`, `blog_content` Fields
+    """
     blog_id = models.AutoField(primary_key=True)
     blog_title = models.CharField(default="",max_length=512)
     blog_url = models.SlugField(default="",max_length=512,unique=True,blank=True, help_text="Leave blank if you donot want custom url")
     blog_image = models.ImageField(upload_to="blog/image/%Y/%m/%d", default="", null=True,blank=True)
     blog_status = models.CharField(default='d',max_length=1,choices=BLOG_CHOICES)
     blog_category = models.ForeignKey(BlogCategory,on_delete=models.SET(get_sentinel_category))
-    blog_author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET(get_sentinel_user),editable=False)
+    blog_author = models.ForeignKey(User,on_delete=models.SET(get_sentinel_user),editable=False)
     blog_date = models.DateTimeField()
     blog_content = models.TextField()
     def __str__(self) -> str:
         return self.blog_url
 
 class UserModel(models.Model):
+    """ Extended User Model to store user data other than default Django User Model Fields"""
     user = models.OneToOneField(User,on_delete=models.SET(get_sentinel_user))
     avatar_image = models.ImageField(upload_to="user/images/%Y/%m/%d",default="",null=True,blank=True)
+    about = models.TextField(null=True,blank=True)
     def __str__(self) -> str:
         return str(self.user)
 
 class Images(models.Model):
+    """ Model to manage images """
     image_id = models.AutoField(primary_key=True)
     image = models.ImageField(default='',upload_to='blog/image/%Y/%m/%d')
     def __str__(self) -> str:
         return str(self.image_id)
 
 class Comment(models.Model):
+    """ Model to handle blog comments """
     id = models.AutoField(primary_key=True)
     Text = models.TextField()
     user = models.ForeignKey(User,models.CASCADE)
