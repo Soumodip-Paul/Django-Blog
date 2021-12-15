@@ -1,4 +1,10 @@
+# Python virtualenv folder
 env
+# Media storage folder
 media
-__pycache__
+# SQLITE Database
 db.sqlite3
+# caches
+__pycache__
+# secret contain mailing credentials and other secrets
+secret.py

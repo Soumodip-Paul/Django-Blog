@@ -1,19 +1,46 @@
 from bs4 import BeautifulSoup
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
+from django.db.models import Q
 from django.http.request import HttpRequest, QueryDict
-from django.http.response import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
+from django.http.response import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from .models import Blog, BlogCategory, Comment, ContactClass, Images, UserModel
+from uuid import *
+from .mail import mail, mailResetPassword,sendVerificationEmail
+from .models import Blog, BlogCategory, Comment, ContactClass, Images, UserModel, not_verified_user
 from .utils import *
 
+
 ResultPerPage = 6
+""" Configure how many query result you want to show in each page """
 
 def index(req: HttpRequest):
     """Landing Page of website"""
     return render(req,'index.html')
+
+def activate(req: HttpRequest, id:str):
+    try:
+        user: not_verified_user = not_verified_user.objects.get(id=UUID(id))
+        if req.method == 'POST':
+            confirm_new_password = req.POST.get('confirm_new_password')
+            new_password = req.POST.get('new_password')
+            if not new_password or not confirm_new_password or new_password != confirm_new_password:
+                return HttpResponseBadRequest('Invalid Passwords')
+            userNew: User = User.objects.create_user(first_name=user.first_name,last_name=user.last_name,username=user.username,email=user.email)
+            userNew.set_password(new_password)
+            userModel : UserModel = UserModel.objects.create(user=userNew,avatar_image=user.userImage,about=user.about)
+            userModel.save()
+            user.delete()
+            mail(user.email,"Account Activated", "Your Account has been activated successfully")
+            login(request=req,user=userNew)
+            return redirect('blogindex')
+        return render(req,'activate.html',{'username': user.username, 'userImage': user.userImage, 'id':id})
+    except not_verified_user.DoesNotExist as e:
+        return HttpResponseNotFound('Not Found')
+    except Exception as e:
+        return InternalServerError(e)
 
 def blog(req: HttpRequest):
     """Endpoint to show blog list"""
@@ -74,7 +101,7 @@ def category(req: HttpRequest,id):
     blogs = prettyFilter(blogs)
     return render(req,'blog.html',{'blogs' : blogs, 'pages': range(results.pages), 'p':  results.p })
 
-def signUp(req: HttpRequest):
+def signUp(req :HttpRequest):
     """End to signup the user"""
     if req.method == 'POST':
         try:
@@ -85,29 +112,29 @@ def signUp(req: HttpRequest):
             lname = body['lastName']
             username = body['username']
             email = body['email']
-            password1 = body['password1']
-            password2 = body['password2']
-            isUserExists = User.objects.filter(username=username).exists()
-            isEmailExists = User.objects.filter(email=email).exists()
-            if username.isalnum() and not isUserExists and not isEmailExists and isEmail(email) and password1 == password2 :
-                user: User = User.objects.create_user(username,email,password1)
-                user.first_name = fname
-                user.last_name = lname
-                user.save()
-                user_model: UserModel = UserModel.objects.create(user=user,avatar_image=image_file,about=about)
-                user_model.save()
-            elif not username.isalnum(): raise ValueError("Username must be alphanumeric")
-            elif not isEmail(email): raise ValueError("Enter a vaid email")
-            elif password1!=password2: raise ValueError("passwords donot match")
-            elif isUserExists: raise NameError("User with this username already exists")
-            elif isEmailExists: raise NameError("User with this email already exists")
-        except ValueError as e: 
+            if not username.isalnum(): raise ValueError("Username must be alphanumeric")
+            if not isEmail(email): raise ValueError("Enter a vaid email")
+            if User.objects.get(Q(username=username)|Q(email=email)):
+                return HttpResponseForbidden('User already exists')
+        except User.DoesNotExist as e:
+            try: 
+                not_verified_user.objects.get(Q(username=username)|Q(email=email))
+                return HttpResponseForbidden('User already exists')
+            except not_verified_user.DoesNotExist as e:
+                # If no user with this email and username save the user as not verified
+                user_not_verified : not_verified_user = not_verified_user.objects.create(username=username,email=email,first_name=fname,last_name=lname,userImage=image_file,about=about)
+                user_not_verified.save()
+
+                ## email body to send
+                sendVerificationEmail(req,user_not_verified)
+                #============end email============#
+                return HttpResponse('OK')
+            except Exception as e:
+                return InternalServerError(e)
+        except ValueError as e:
             return HttpResponseBadRequest(e)
-        except NameError as e: 
-            return HttpResponseForbidden(e)
         except Exception as e:
             return InternalServerError(e)
-        return HttpResponse('OK')
     return render(req,'signup.html') if not req.user.is_authenticated else redirect('blogindex')
 
 def loginUser(req: HttpRequest):
@@ -227,6 +254,7 @@ def resetPassword(req: HttpRequest):
             
             user.set_password(req.POST['new_password'])
             user.save()
+            mailResetPassword(user)
             login(req,user)
             return redirect('blogindex')
 
@@ -251,3 +279,6 @@ def uploadImage(request: HttpRequest):
     if request.user.is_authenticated:
         return render(request,'s.html') 
     else:  raise Http404("Page not found")
+
+def updateEmail(req :HttpRequest):
+    return redirect('blogindex')

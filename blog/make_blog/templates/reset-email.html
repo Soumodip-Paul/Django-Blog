@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>Reset Password - Cool Developer Blog</title>
+    <title>Update Email - Cool Developer Blog</title>
     <meta content="{% block desc %}{% endblock %}" name="description">
     <meta content="{% block keyword %}{% endblock %}" name="keywords">
     <!-- Favicons -->
@@ -65,27 +65,31 @@
         <form action="/reset-password" method="post" class="email-form">
             {% csrf_token %}
             <input type="hidden" name="redirect" value="/">
-            <img class="mb-4 rounded-circle border border-2 border-primary" src="{% if userImage != None and userImage != '' %}/media/{{userImage}}{% else %}/assets/img/apple-touch-icon.png{% endif %}" alt="Logo" width="128" height="128">
+            <img class="mb-4 rounded-circle border border-2 border-primary"
+                src="{% if userImage != None and userImage != '' %}/media/{{userImage}}{% else %}/assets/img/apple-touch-icon.png{% endif %}"
+                alt="Logo" width="128" height="128">
             <h1 class="h3 mb-3 fw-normal">Reset Password for {{request.user.username}}</h1>
             <div class="p-0 m-0" style="min-height: 60px;">
                 <div class="loading">Loading</div>
                 <div class="error-message"></div>
-                <div class="sent-message">Password Reset Successfully</div>
+                <div class="sent-message">Email Updated Successfully</div>
             </div>
             <div class="form-floating">
+                {% if not isAuthorized and not isSentOTP %}
                 <input type="password" class="form-control" name="password" id="password"
                     placeholder="Currrent Password">
-                <label for="password">Currrent Password</label>
-                <div class="form-floating">
-                    <input type="password" class="form-control" name="new_password" id="new_password"
-                        placeholder="New Password">
-                    <label for="new_password">New Password</label>
-                </div>
-                <div class="form-floating">
-                    <input type="password" class="form-control" name="confirm_new_password" id="confirm_new_password"
-                        placeholder="Confirm New Password">
-                    <label for="confirm_new_password">Confirm New Password</label>
-                </div>
+                <label for="password">Password</label>
+                {% elif isAuthorized and not isSentOTP %}
+                <input type="email" class="form-control" name="email" id="email"
+                    placeholder="New email">
+                <label for="email">New Email Address</label>
+                {% elif isSentOTP %}
+                <input type="text" maxlength="6" class="form-control" name="OTP" id="OTP"
+                    placeholder="OTP">
+                <label for="OTP">Enter OTP</label>
+                {% else %}
+
+                {% endif %}
             </div>
             <button class="w-100 btn btn-lg btn-primary" type="submit">Reset Password</button>
             <p class="small"></p>

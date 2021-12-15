@@ -52,6 +52,7 @@
 						<ul class="dropdown-menu">
 							{% if userImage != None and userImage != '' %}<li><img src="/media/{{userImage}}" alt="Profile" width="72" height="72" class="mx-auto mb-2 d-block rounded-circle"></li>{% endif %}
 							<li><a class="dropdown-item {% block blog_profile %}{% endblock %}" href="/profile">Profile</a></li>
+							<li><a class="dropdown-item {% block blog_update_email %}{% endblock %}" href="/update-email">Update Email</a></li>
 							<li><hr class="dropdown-divider"></li>
 							<li><a class="dropdown-item" href="/admin">Admin Panel</a></li>
 							<li><a class="dropdown-item" href="/reset-password">Reset Password</a></li>
@@ -154,7 +155,7 @@
 		class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></span>
 	{% if not request.user.is_authenticated%}
 	<div class="modal fade" id="modalSignIn" tabindex="100" aria-labelledby="modalDialogIn" aria-hidden="true">
-		<form class="modal-dialog no-scroll" id="modalLogin" action="/login" method="post">
+		<form class="modal-dialog no-scroll text-dark" id="modalLogin" action="/login" method="post">
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title" id="modalDialogIn">Login Now</h5>

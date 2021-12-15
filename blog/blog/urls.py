@@ -19,6 +19,10 @@ from django.conf.urls.static import static
 from django.urls.conf import include
 from . import settings
 
+# # Uncomment this lines to enanle 2 factor authentication for admin panel
+# from django_otp.admin import OTPAdminSite
+# admin.site.__class__ = OTPAdminSite
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include("make_blog.urls"))
