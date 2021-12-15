@@ -9,7 +9,8 @@
 
 			let thisForm = this;
 
-			let action = thisForm.getAttribute('action');
+			let action = thisForm.getAttribute('action') == 0? window.location.href: thisForm.getAttribute('action');
+			console.log(action)
 			let recaptcha = thisForm.getAttribute('data-recaptcha-site-key');
 
 			if (!action) {

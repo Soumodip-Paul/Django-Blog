@@ -1,14 +1,17 @@
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
 from django.http.request import HttpRequest
 from django.template.loader import render_to_string
 from datetime import datetime
 import smtplib
 from .models import not_verified_user
+from django.utils.encoding import force_text,force_bytes
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode 
 
+password_token = PasswordResetTokenGenerator()
 
-
-def mailResetPassword(user : User) -> str :
+def mailResetPasswordSuccessfully(user : User) -> str :
     fname = user.first_name
     uname = user.username
     email=user.email
@@ -20,7 +23,18 @@ def mailResetPassword(user : User) -> str :
     mail(email,subject,message)
 
 def sendVerificationEmail(req:HttpRequest,user: not_verified_user):
-    mail(user.email,"User Verification",render_to_string('email_temp.html',{'uid': str(user.id), 'domain': get_current_site(req).domain}))
+    mail(user.email,"User Verification",render_to_string('email_temp.html',{
+        'uid': str(user.id),
+        'domain': get_current_site(req).domain
+        }))
+
+def sendPasswordResetEmail(req:HttpRequest,user: User):
+    mail(user.email,"Reset password",render_to_string('email_password_reset.html',{
+        'uid': urlsafe_base64_encode(force_bytes(user.get_username())), 
+        'domain': get_current_site(req).domain,
+        'token': password_token.make_token(user=user),
+        'user': user
+        }))
 
 def mail(email:str,subject:str,message:str) -> None:
     try:

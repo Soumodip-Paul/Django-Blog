@@ -4,11 +4,11 @@ from django.contrib.auth import login,logout,authenticate
 from django.db.models import Q
 from django.http.request import HttpRequest, QueryDict
 from django.http.response import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render 
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from uuid import *
-from .mail import mail, mailResetPassword,sendVerificationEmail
+from .mail import mail, mailResetPasswordSuccessfully as mailResetPassword, sendPasswordResetEmail,sendVerificationEmail,password_token
 from .models import Blog, BlogCategory, Comment, ContactClass, Images, UserModel, not_verified_user
 from .utils import *
 
@@ -177,11 +177,11 @@ def postComment(req: HttpRequest):
             post = Blog.objects.get(blog_id=postId)
             comment = Comment(Text=Text,user=user,post=post,parent=None)
             comment.save()
-            return redirect(req.META['HTTP_REFERER'] or '/')
+            return redirect(req.META.get('HTTP_REFERER') or '/')
         except Exception as e:
             print(e)
             return HttpResponseBadRequest("Bad request")
-    return redirect(req.META['HTTP_REFERER'] or '/')
+    return redirect(req.META.get('HTTP_REFERER') or '/')
 
 def userProfile(req: HttpRequest):
     """endpoint to update user profile"""
@@ -229,12 +229,12 @@ def resetPassword(req: HttpRequest):
             return redirect('blogindex')
         userImage = None
         try:
-            userImage: UserModel = UserModel.objects.get(user = req.user).avatar_image
-            print(userImage)
+            userModel: UserModel = UserModel.objects.get(user = req.user)
+            userImage = userModel.avatar_image
         except Exception as e:
             print(e)
             userImage = None
-        return render(req,'reset-password.html', {'userImage':userImage})
+        return render(req,'reset-password.html', {'userImage':userImage, 'isResetLink': False})
     if req.method == 'POST':
         if not req.user.is_authenticated:
             return HttpResponseForbidden('You need to login to reset password')
@@ -260,6 +260,55 @@ def resetPassword(req: HttpRequest):
 
         except User.DoesNotExist as e:
            return HttpResponseForbidden('User does not exists')
+        except Exception as e:
+            return InternalServerError(e)
+
+def sendPasswordResetLink(req: HttpRequest):
+    """Send Password resetlink for not logged in user"""
+    if req.method == 'POST':
+        if req.POST.get('cred') == None: return HttpResponseBadRequest("Bad Request")
+        try:
+            user: User = User.objects.get(Q(email=req.POST['cred'])| Q(username=req.POST['cred']))
+            sendPasswordResetEmail(req,user)
+            return redirect('/')
+        except User.DoesNotExist as e:
+            return HttpResponseBadRequest("User not found")
+        except Exception as e:
+            return InternalServerError(e)
+    return render(req,'send_passwordreset_email_form.html')
+
+def resetPasswordLink(req: HttpRequest, uid,token):
+    from django.utils.encoding import force_text
+    from django.utils.http import urlsafe_base64_decode 
+    if req.method == 'GET':
+        valid = False
+        try:
+            username = force_text(urlsafe_base64_decode(uid))
+            user: User = User.objects.get(username=username)
+            valid = password_token.check_token(user, token)
+        except User.DoesNotExist as e:
+            valid = False
+        return (
+            render(req,'reset-password.html', {'userImage': None, 'isResetLink': True}) if 
+            valid else redirect(req.META.get('HTTP_REFERER') or '/')
+        )
+
+    if req.method == 'POST':
+        try:
+            username = force_text(urlsafe_base64_decode(uid))
+            user: User = User.objects.get(username=username)
+            new_passsword = req.POST.get('new_password')
+            confirm = req.POST.get('confirm_new_password')
+            if  not new_passsword or not confirm or new_passsword != confirm:
+                return HttpResponseBadRequest('Invalid request')
+            if password_token.check_token(user, token):
+                user.set_password(new_passsword)
+                user.save()
+                mailResetPassword(user=user)
+                return HttpResponse('Your Password has been reset successfully')
+            else: return redirect('blogindex')
+        except(TypeError, ValueError, OverflowError, User.DoesNotExist) as e:
+            return HttpResponse('link is invalid!')
         except Exception as e:
             return InternalServerError(e)
 
