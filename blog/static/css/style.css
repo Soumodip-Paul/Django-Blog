@@ -541,6 +541,8 @@ section {
   color: #ccc;
 }
 .comment-list li .comment-body .reply {
+  border: none;
+  outline: none;
   padding: 5px 10px;
   background: #e6e6e6;
   color: #000000;

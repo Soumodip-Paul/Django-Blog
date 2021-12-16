@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 from django.contrib.auth.models import User
-from django.contrib.auth import login,logout,authenticate
+from django.contrib.auth import login,logout,authenticate, tokens
 from django.db.models import Q
 from django.http.request import HttpRequest, QueryDict
 from django.http.response import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
@@ -8,8 +8,8 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from uuid import *
-from .mail import mail, mailResetPasswordSuccessfully as mailResetPassword, sendPasswordResetEmail,sendVerificationEmail,password_token
-from .models import Blog, BlogCategory, Comment, ContactClass, Images, UserModel, not_verified_user
+from .mail import mail, mailResetPasswordSuccessfully, sendPasswordResetEmail,sendVerificationEmail,password_token
+from .models import Blog, BlogCategory, Comment, ContactClass, Images, UserModel
 from .utils import *
 
 
@@ -20,25 +20,28 @@ def index(req: HttpRequest):
     """Landing Page of website"""
     return render(req,'index.html')
 
-def activate(req: HttpRequest, id:str):
+def activate(req: HttpRequest, id:str, token):
+    logout(req)
     try:
-        user: not_verified_user = not_verified_user.objects.get(id=UUID(id))
+        userModel: UserModel = UserModel.objects.get(id=UUID(id))
+        user: User = userModel.user
         if req.method == 'POST':
+            if not password_token.check_token(user,token): return HttpResponseForbidden('Invalid Link')
             confirm_new_password = req.POST.get('confirm_new_password')
             new_password = req.POST.get('new_password')
             if not new_password or not confirm_new_password or new_password != confirm_new_password:
                 return HttpResponseBadRequest('Invalid Passwords')
-            userNew: User = User.objects.create_user(first_name=user.first_name,last_name=user.last_name,username=user.username,email=user.email)
-            userNew.set_password(new_password)
-            userModel : UserModel = UserModel.objects.create(user=userNew,avatar_image=user.userImage,about=user.about)
-            userModel.save()
-            user.delete()
+            user.set_password(new_password)
+            user.is_active = True
+            user.save()
             mail(user.email,"Account Activated", "Your Account has been activated successfully")
-            login(request=req,user=userNew)
+            login(request=req,user=user)
             return redirect('blogindex')
-        return render(req,'activate.html',{'username': user.username, 'userImage': user.userImage, 'id':id})
-    except not_verified_user.DoesNotExist as e:
+        return render(req,'activate.html',{'username': user.username, 'userImage': userModel.avatar_image, 'id':id, 'token': token})
+    except User.DoesNotExist as e:
         return HttpResponseNotFound('Not Found')
+    except UserModel.DoesNotExist as e:
+        return HttpResponseBadRequest('Bad request')
     except Exception as e:
         return InternalServerError(e)
 
@@ -63,13 +66,32 @@ def blogpost(req: HttpRequest,id):
             categories.append(cat)
         blogPostItem: Blog = Blog.objects.get(blog_url=id)
         if blogPostItem.blog_status == 'p' :
-            comments = [item for item in Comment.objects.filter(post=blogPostItem).order_by('-timestamp')[:100]]
-            blog_desc = BeautifulSoup(blogPostItem.blog_content,"html.parser").get_text()[:120]
+            # comments = [item for item in Comment.objects.filter(post=blogPostItem).order_by('-timestamp')[:100]]
+            comments = []
+            for item in Comment.objects.filter(post=blogPostItem,parent=None).order_by('-timestamp')[:100]:
+                try :
+                    item.userImage = UserModel.objects.get(user=item.user).avatar_image
+                except UserModel.DoesNotExist as e:
+                    item.userImage = None
+                item.replycomments = []
+                for item2 in Comment.objects.filter(post=blogPostItem,parent=item).order_by('-timestamp')[:50]:
+                    try :
+                        item2.userImage = UserModel.objects.get(user=item2.user).avatar_image
+                    except UserModel.DoesNotExist as e:
+                        item2.userImage = None
+                    item.replycomments.append(item2)
+                comments.append(item)
+            blog_desc = BeautifulSoup(blogPostItem.blog_content,"html.parser").get_text()
             blogPostItem.blog_date = pretty_date(blogPostItem.blog_date)
-            try: profileImage = UserModel.objects.get(user=blogPostItem.blog_author).avatar_image
-            except UserModel.DoesNotExist : profileImage = None
-            return render(req,'blog-post.html',{ 'blog': blogPostItem, 'blog_desc': blog_desc, 'categories': categories, 'comments': comments, 'profileImage': profileImage })
-        raise Http404("Page not found error 2")
+            try: 
+                userModel: UserModel =  UserModel.objects.get(user=blogPostItem.blog_author)
+                profileImage = userModel.avatar_image
+                about_author = userModel.about
+            except UserModel.DoesNotExist : 
+                profileImage = None
+                about_author = None
+            return render(req,'blog-post.html',{ 'blog': blogPostItem, 'blog_desc': blog_desc, 'categories': categories, 'comments': comments, 'profileImage': profileImage, 'about_author': about_author })
+        raise Http404("Page not found error")
     except:
         raise Http404("Page not found error")
 
@@ -118,15 +140,15 @@ def signUp(req :HttpRequest):
                 return HttpResponseForbidden('User already exists')
         except User.DoesNotExist as e:
             try: 
-                not_verified_user.objects.get(Q(username=username)|Q(email=email))
-                return HttpResponseForbidden('User already exists')
-            except not_verified_user.DoesNotExist as e:
                 # If no user with this email and username save the user as not verified
-                user_not_verified : not_verified_user = not_verified_user.objects.create(username=username,email=email,first_name=fname,last_name=lname,userImage=image_file,about=about)
-                user_not_verified.save()
-
+                newUser : User = User.objects.create_user(first_name=fname,last_name=lname,username=username,email=email)
+                newUser.set_password('')
+                newUser.is_active = False
+                newUser.save()
+                userModel : UserModel = UserModel.objects.create(user=newUser,avatar_image=image_file,about=about)
+                userModel.save()
                 ## email body to send
-                sendVerificationEmail(req,user_not_verified)
+                sendVerificationEmail(req,newUser,userModel)
                 #============end email============#
                 return HttpResponse('OK')
             except Exception as e:
@@ -163,6 +185,8 @@ def search(req: HttpRequest):
         results = [ item  for item in result]
         result = Blog.objects.filter(blog_content__icontains=qString).order_by('-blog_date')
         results.extend([item for item in result if item not in results])
+        result = Blog.objects.filter(blog_author__username__icontains=qString).order_by('-blog_date')
+        results.extend([item for item in result if item not in results])
         results : Pages = paginateResults(req,results or [],ResultPerPage,'blogsearch')
         return render(req, 'search.html', {'qs': qString or '' , 'blogs': prettyFilter(results.listItem), 'pages':range(results.pages), 'p': results.p })
     return render(req,'search.html',{})
@@ -174,8 +198,15 @@ def postComment(req: HttpRequest):
             Text = req.POST['comment']
             user = req.user
             postId = req.POST['postId']
+            ParentComment = None
+            if req.POST.get('parentId') != None:
+                try:
+                    ParentComment: Comment = Comment.objects.get(id = req.POST.get('parentId'))
+                    ParentComment = ParentComment.parent or ParentComment
+                except Comment.DoesNotExist as e:
+                    ParentComment = None
             post = Blog.objects.get(blog_id=postId)
-            comment = Comment(Text=Text,user=user,post=post,parent=None)
+            comment = Comment(Text=Text,user=user,post=post,parent=ParentComment)
             comment.save()
             return redirect(req.META.get('HTTP_REFERER') or '/')
         except Exception as e:
@@ -254,12 +285,47 @@ def resetPassword(req: HttpRequest):
             
             user.set_password(req.POST['new_password'])
             user.save()
-            mailResetPassword(user)
+            mailResetPasswordSuccessfully(user)
             login(req,user)
             return redirect('blogindex')
 
         except User.DoesNotExist as e:
            return HttpResponseForbidden('User does not exists')
+        except Exception as e:
+            return InternalServerError(e)
+
+def resetPasswordLink(req: HttpRequest, uid: str,token: str):
+    from django.utils.encoding import force_text
+    from django.utils.http import urlsafe_base64_decode 
+    if req.method == 'GET':
+        try:
+            username = force_text(urlsafe_base64_decode(uid))
+            user: User = User.objects.get(username=username)
+           
+        except User.DoesNotExist as e:
+            return redirect('/')
+        return (
+            render(req,'reset-password.html', {'userImage': None, 'isResetLink': True, 'uid': uid, 'token':token})
+        )
+
+    if req.method == 'POST':
+        try:
+            username = force_text(urlsafe_base64_decode(uid))
+            user: User = User.objects.get(username=username)
+            if not password_token.check_token(user, token):
+                return HttpResponseForbidden('Invalid Link')
+            new_passsword = req.POST.get('new_password')
+            confirm = req.POST.get('confirm_new_password')
+            if  not new_passsword or not confirm or new_passsword != confirm:
+                return HttpResponseBadRequest('Invalid request')
+            if password_token.check_token(user, token):
+                user.set_password(new_passsword)
+                user.save()
+                mailResetPasswordSuccessfully(user=user)
+                return HttpResponse('Your Password has been reset successfully')
+            else: return redirect('blogindex')
+        except(TypeError, ValueError, OverflowError, User.DoesNotExist) as e:
+            return HttpResponse('link is invalid!')
         except Exception as e:
             return InternalServerError(e)
 
@@ -276,41 +342,6 @@ def sendPasswordResetLink(req: HttpRequest):
         except Exception as e:
             return InternalServerError(e)
     return render(req,'send_passwordreset_email_form.html')
-
-def resetPasswordLink(req: HttpRequest, uid,token):
-    from django.utils.encoding import force_text
-    from django.utils.http import urlsafe_base64_decode 
-    if req.method == 'GET':
-        valid = False
-        try:
-            username = force_text(urlsafe_base64_decode(uid))
-            user: User = User.objects.get(username=username)
-            valid = password_token.check_token(user, token)
-        except User.DoesNotExist as e:
-            valid = False
-        return (
-            render(req,'reset-password.html', {'userImage': None, 'isResetLink': True}) if 
-            valid else redirect(req.META.get('HTTP_REFERER') or '/')
-        )
-
-    if req.method == 'POST':
-        try:
-            username = force_text(urlsafe_base64_decode(uid))
-            user: User = User.objects.get(username=username)
-            new_passsword = req.POST.get('new_password')
-            confirm = req.POST.get('confirm_new_password')
-            if  not new_passsword or not confirm or new_passsword != confirm:
-                return HttpResponseBadRequest('Invalid request')
-            if password_token.check_token(user, token):
-                user.set_password(new_passsword)
-                user.save()
-                mailResetPassword(user=user)
-                return HttpResponse('Your Password has been reset successfully')
-            else: return redirect('blogindex')
-        except(TypeError, ValueError, OverflowError, User.DoesNotExist) as e:
-            return HttpResponse('link is invalid!')
-        except Exception as e:
-            return InternalServerError(e)
 
 @csrf_exempt
 def uploadImage(request: HttpRequest):

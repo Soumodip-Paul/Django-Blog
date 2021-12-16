@@ -42,6 +42,7 @@
 					<li><a class="{% block blog_active %}{% endblock %}" href="/blog">Blog</a></li>
 					<li><a class="{% block features_active %}{% endblock %}" href="/features">Features</a></li>
 					<li><a class="{% block pricing_active %}{% endblock %}" href="/pricing">Pricing</a></li>
+					<li><a class="{% block search_active %}{% endblock %}" href="/search">Search</a></li>
 					{% if not user.is_authenticated %}
 					<li><a class="{% block blog_signup %}{% endblock %}" href="/signup">Sign Up</a></li>
 					<li><a class="{% block blog_login %}{% endblock %}" href="/login" data-bs-toggle="modal" data-bs-target="#modalSignIn">Login</a></li>
@@ -54,10 +55,10 @@
 							<li><a class="dropdown-item {% block blog_profile %}{% endblock %}" href="/profile">Profile</a></li>
 							<li><a class="dropdown-item {% block blog_update_email %}{% endblock %}" href="/update-email">Update Email</a></li>
 							<li><hr class="dropdown-divider"></li>
+							{% if user.is_staff %}
 							<li><a class="dropdown-item" href="/admin">Admin Panel</a></li>
-							<li><a class="dropdown-item" href="/reset-password">Reset Password</a></li>
-							{% if user.is_superuser %}
 							{% endif %}
+							<li><a class="dropdown-item" href="/reset-password">Reset Password</a></li>
 							<li><a class="dropdown-item" href="/logout">Log Out</a></li>
 						</ul>
 					</li>
@@ -173,7 +174,10 @@
 							placeholder="Password">
 						<label for="floatingPassword">Password</label>
 					</div>
-					<p class="text-end"><small>Forgot Password? <a href="/email-reset-password" class="text-primary">Reset Now</a></small></p>
+					<p class="d-flex justify-content-between">
+						<small><a href="/email-reset-password" class="text-primary">Forgot Password?</a></small>
+						<small>New User ?<a href="/signup" class="text-primary"> Sign Up Now</a></small> 
+					</p>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

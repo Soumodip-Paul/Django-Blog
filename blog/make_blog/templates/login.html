@@ -60,8 +60,8 @@
 	</style>
 </head>
 
-<body class="text-center">
-	<main class="form-signin">
+<body class="text-center text-dark">
+	<main class="form-signin" style="max-width: 500px !important ;">
 		<form action="/login" method="post" class="email-form">
 			{% csrf_token %}
 			<input type="hidden" name="redirect" value="/">
@@ -81,7 +81,10 @@
 				<label for="password">Password</label>
 			</div>
 			<button class="w-100 btn btn-lg btn-primary" type="submit">Log in</button>
-			<p class="small"></p>
+			<p class="small m-2 d-flex justify-content-between">
+				<span><a href="/email-reset-password" class="text-primary">Forgot Password?</a></span>
+				<span>New User ?<a href="/signup" class="text-primary fw-bold"> Sign Up Now</a></span> 
+			</p>
 			<p class="mt-5 mb-3 text-muted">
 				Goto <a href="/">homepage</a>
 				<br>&copy; 2017 &minus; 2021

@@ -3,7 +3,7 @@ from .views import *
 
 urlpatterns = [
     path('', index,name='blogindex'),
-    path('activate/<str:id>', activate, name="activate"),
+    path('activate/<str:id>/<token>', activate, name="activate"),
     path('blog/', blog,name='blogvalue'),
     path('blog/<str:id>', blogpost,name='blogpostvalue'),
     path('blog-single/', blog_single,name='blog-single'),

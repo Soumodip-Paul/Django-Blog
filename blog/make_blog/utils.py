@@ -1,10 +1,11 @@
+import re
 from bs4 import BeautifulSoup
 from datetime import datetime
+from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import redirect
 from django.utils import timezone
 from math import ceil
-import re
 
 regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 
@@ -23,7 +24,7 @@ class InternalServerError(HttpResponse):
         print(content)
         super().__init__(content=content, *args, **kwargs)
 
-def isEmail(email) -> bool:
+def isEmail(email : str) -> bool:
     if(re.fullmatch(regex, email)):
         return True
     else:
@@ -74,16 +75,16 @@ def pretty_date(time=False) -> str:
 def prettyFilter(blogs): 
     for blog in blogs :
         blog.blog_date = pretty_date(blog.blog_date)
-        blog.blog_content = BeautifulSoup(blog.blog_content,"html.parser").get_text()[:120]
+        blog.blog_content = BeautifulSoup(blog.blog_content,"html.parser").get_text()
     return blogs
       
-def paginateResults(req, filter_list, ResultPerPage:int, Redirect:str) -> Pages:
+def paginateResults(req: HttpRequest, filter_list, ResultPerPage:int, Redirect:str) -> Pages:
     pages = ceil(len(filter_list) / ResultPerPage)
     p = int(req.GET.get('p') or 1)
     if pages > 0 and p > pages or p < 1: return redirect(Redirect)
     else : return Pages(listItem=filter_list[ (p - 1) * ResultPerPage: p * ResultPerPage],pages=pages,p=p)
        
-def urlify(s) -> str:
+def urlify(s : str) -> str:
 
     # Remove all non-word characters (everything except numbers and letters)
     s = re.sub(r"[^\w\s]", '', s)

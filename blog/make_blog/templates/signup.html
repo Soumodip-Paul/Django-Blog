@@ -103,7 +103,7 @@ Welcome to django blog
                         <ul class="list-unstyled">
                             <li class="mb-3 text-center">
                                 <strong class="d-block mb-3 ">Profile Image</strong>
-                                <input type="file" name="user_image" id="file" class="file" onchange="readURL(this)">
+                                <input type="file" name="user_image" id="file" class="file" onchange="readURL(this)" accept="image/*">
                                 <label for="file"
                                     class="border border-primary border-1 position-relative rounded-circle mx-auto">
                                     <img src="/assets/img/undraw_svg_4.svg" width="256" height="256" alt="User Image"
@@ -112,14 +112,6 @@ Welcome to django blog
                                         onclick="clearInput()">Reset</button>
                                 </label>
                             </li>
-                            <!-- <li class="mb-3">
-                            <strong class="d-block mb-1">Phone</strong>
-                            <span>+1 232 3235 324</span>
-                        </li>
-                        <li class="mb-3">
-                            <strong class="d-block mb-1">Email</strong>
-                            <span><a href="mailto:support@cooldeveloper.com">support@cooldeveloper.com</a></span>
-                        </li> -->
                         </ul>
                     </div>
 
@@ -179,7 +171,7 @@ Welcome to django blog
                             <div class="col-md-12 mb-3" style="min-height: 60px;">
                                 <div class="loading">Loading</div>
                                 <div class="error-message"></div>
-                                <div class="sent-message">User successfully Created</div>
+                                <div class="sent-message">Activation link is sent to your email address successfully</div>
                             </div>
 
                             <div class="col-md-6 form-group">

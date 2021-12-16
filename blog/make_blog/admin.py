@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.http.request import HttpRequest
-from .models import Comment, ContactClass,BlogCategory,Blog,UserModel,Images, not_verified_user
+from .models import Comment, ContactClass,BlogCategory,Blog,UserModel,Images
 from .utils import urlify
 
 # Register your models here.
@@ -84,17 +84,5 @@ class ImageAdmin(admin.ModelAdmin):
 
 @admin.register(UserModel)
 class UserModelClass(admin.ModelAdmin):
-    list_display = ['user','avatar_image']
-
-@admin.register(not_verified_user)
-class NotVerifiedUserClass(admin.ModelAdmin):
-    list_display = ['id','username','email','date_joined']
-    list_display_links = ['id', 'username']
-    list_display = ['id','username','email','date_joined']
-    search_fields = ['id','username','email','date_joined', 'first_name', 'last_name']
-    def has_add_permission(self, request: HttpRequest) -> bool:
-        return False
-    def has_change_permission(self, request: HttpRequest, obj= ...) -> bool:
-        return False
-    def has_delete_permission(self, request: HttpRequest, obj = ...) -> bool:
-        return request.user.is_superuser
+    list_display = ['user','id','avatar_image']
+    search_fields = ['id', 'user']

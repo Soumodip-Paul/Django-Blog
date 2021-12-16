@@ -59,23 +59,12 @@ class Blog(models.Model):
 
 class UserModel(models.Model):
     """ Extended User Model to store user data other than default Django User Model Fields"""
+    id = models.UUIDField(primary_key = True,default = uuid.uuid4,editable = False)
     user = models.OneToOneField(User,on_delete=models.CASCADE)
     avatar_image = models.ImageField(upload_to="user/images/%Y/%m/%d",default="",null=True,blank=True)
     about = models.TextField(null=True,blank=True)
     def __str__(self) -> str:
         return str(self.user)
-
-class not_verified_user(models.Model):
-    id = models.UUIDField(primary_key = True,default = uuid.uuid4,editable = False)
-    first_name = models.CharField(max_length=150,default='')
-    last_name = models.CharField(max_length=150,default=150)
-    about = models.TextField(null=True,blank=True)
-    email = models.EmailField(null=False,blank=False,unique=True)
-    userImage = models.ImageField(upload_to="user/images/%Y/%m/%d",default="",null=True,blank=True)
-    username = models.CharField(max_length=150,unique=True,)
-    date_joined = models.DateTimeField(default=now)
-    def __str__(self) -> str:
-        return str(self.username)
 
 class Images(models.Model):
     """ Model to manage images """

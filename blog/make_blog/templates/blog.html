@@ -51,7 +51,7 @@ Welcome to django blog
 						<div class="post-text">
 							<span class="post-meta">{{blog.blog_date}} &bullet; By <a href="#">{{blog.blog_author}}</a></span>
 							<h3><a href="/blog/{{blog.blog_url}}">{{blog.blog_title}}</a></h3>
-							<p>{{blog.blog_content}}{% if blog.blog_content|length > 119 %}...{% endif %}</p>
+							<p>{{blog.blog_content|truncatewords:25}}</p>
 							<p><a href="/blog/{{blog.blog_url}}" class="readmore">Read more</a></p>
 						</div>
 					</div>
