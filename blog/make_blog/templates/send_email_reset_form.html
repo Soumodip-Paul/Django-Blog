@@ -13,7 +13,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css?family=Roboto:300&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400&display=swap" rel="stylesheet">
     <!-- Vendor CSS Files -->
     <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/style.css">
@@ -62,7 +62,7 @@
 
 <body class="text-center text-dark">
     <main class="form-signin">
-        <form action="/reset-email/{{uid}}/{{email}}/{{token}}" method="post" class="email-form">
+        <form action="/reset-email" method="post" class="email-form">
             {% csrf_token %}
             <input type="hidden" name="redirect" value="/">
             <img class="mb-4 rounded-circle border border-2 border-primary"
@@ -72,29 +72,22 @@
             <div class="p-0 m-0" style="min-height: 60px;">
                 <div class="loading">Loading</div>
                 <div class="error-message"></div>
-                <div class="sent-message">Email Updated Successfully</div>
+                <div class="sent-message">Activation Link sent to your email address</div>
             </div>
             <div class="form-floating">
-                {% if not isAuthorized and not isSentOTP %}
                 <input type="password" class="form-control" name="password" id="password"
                     placeholder="Currrent Password">
                 <label for="password">Password</label>
-                {% elif isAuthorized and not isSentOTP %}
-                <input type="email" class="form-control" name="email" id="email"
-                    placeholder="New email">
-                <label for="email">New Email Address</label>
-                {% elif isSentOTP %}
-                <input type="text" maxlength="6" class="form-control" name="OTP" id="OTP"
-                    placeholder="OTP">
-                <label for="OTP">Enter OTP</label>
-                {% else %}
-
-                {% endif %}
+            </div>
+            <div class="form-floating">
+                <input type="email" class="form-control" name="newEmail" id="newEmail"
+                    placeholder="newEmail">
+                <label for="newEmail">New Email Address</label>
             </div>
             <button class="w-100 btn btn-lg btn-primary" type="submit">Update Email</button>
             <p class="small"></p>
             <p class="mt-5 mb-3 text-muted">
-                Goto <a href="/" class="text-primary">homepage</a>
+                Goto <a href="/" class="text-primary">Homepage</a>
                 <br>&copy; 2017 &minus; 2021
             </p>
         </form>

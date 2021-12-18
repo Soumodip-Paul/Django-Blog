@@ -8,7 +8,7 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from uuid import *
-from .mail import mail, mailResetPasswordSuccessfully, sendPasswordResetEmail,sendVerificationEmail,password_token
+from .mail import mail, mailEmailResetSuccessfully, mailResetPasswordSuccessfully, sendEmailResetEmail, sendPasswordResetEmail,sendVerificationEmail,password_token,email_token
 from .models import Blog, BlogCategory, Comment, ContactClass, Images, UserModel
 from .utils import *
 
@@ -95,21 +95,6 @@ def blogpost(req: HttpRequest,id):
     except:
         raise Http404("Page not found error")
 
-def features(req: HttpRequest):
-    return render(req,'features.html')
-
-def pricing(req: HttpRequest):
-    return render(req,'pricing.html')
-
-def contact(req: HttpRequest):
-    """Endpoint to get user questions"""
-    if req.method == 'POST':
-        credentials = req.POST
-        contactDetails = ContactClass(query_desc=credentials.get('message'),customer_name=credentials.get('name'),customer_email=credentials.get('email'),query_subject=credentials.get('subject'), date = timezone.now())
-        contactDetails.save()
-        return HttpResponse('OK')
-    return render(req,'contact.html')
-
 def blog_single(req: HttpRequest):
     return render(req,'blog-single.html')
 
@@ -123,48 +108,24 @@ def category(req: HttpRequest,id):
     blogs = prettyFilter(blogs)
     return render(req,'blog.html',{'blogs' : blogs, 'pages': range(results.pages), 'p':  results.p })
 
-def signUp(req :HttpRequest):
-    """End to signup the user"""
+def contact(req: HttpRequest):
+    """Endpoint to get user questions"""
     if req.method == 'POST':
-        try:
-            body = req.POST
-            image_file = req.FILES.get('user_image')
-            about = body.get('about')
-            fname = body['firstName']
-            lname = body['lastName']
-            username = body['username']
-            email = body['email']
-            if not username.isalnum(): raise ValueError("Username must be alphanumeric")
-            if not isEmail(email): raise ValueError("Enter a vaid email")
-            if User.objects.get(Q(username=username)|Q(email=email)):
-                return HttpResponseForbidden('User already exists')
-        except User.DoesNotExist as e:
-            try: 
-                # If no user with this email and username save the user as not verified
-                newUser : User = User.objects.create_user(first_name=fname,last_name=lname,username=username,email=email)
-                newUser.set_password('')
-                newUser.is_active = False
-                newUser.save()
-                userModel : UserModel = UserModel.objects.create(user=newUser,avatar_image=image_file,about=about)
-                userModel.save()
-                ## email body to send
-                sendVerificationEmail(req,newUser,userModel)
-                #============end email============#
-                return HttpResponse('OK')
-            except Exception as e:
-                return InternalServerError(e)
-        except ValueError as e:
-            return HttpResponseBadRequest(e)
-        except Exception as e:
-            return InternalServerError(e)
-    return render(req,'signup.html') if not req.user.is_authenticated else redirect('blogindex')
+        credentials = req.POST
+        contactDetails = ContactClass(query_desc=credentials.get('message'),customer_name=credentials.get('name'),customer_email=credentials.get('email'),query_subject=credentials.get('subject'), date = timezone.now())
+        contactDetails.save()
+        return HttpResponse('OK')
+    return render(req,'contact.html')
+
+def features(req: HttpRequest):
+    return render(req,'features.html')
 
 def loginUser(req: HttpRequest):
     """End point to login a user"""
     if req.method == 'POST':
         username = req.POST.get('username')
         password = req.POST.get('password')
-        user = authenticate(username=username,password=password)
+        user: User = authenticate(username=username,password=password)
         if user is not None:
             login(req,user)
             return redirect( req.POST.get('redirect') or req.META.get('HTTP_REFERER') or '/')
@@ -176,28 +137,15 @@ def logoutUser(req: HttpRequest):
     logout(req)
     return redirect(req.META.get('HTTP_REFERER') or '/')
 
-def search(req: HttpRequest):
-    """Endpoint to paginate user"""
-    qString = req.GET.get('q')
-    results = []
-    if qString != None and len(qString) != 0:
-        result = Blog.objects.filter(blog_title__icontains=qString).order_by('-blog_date')
-        results = [ item  for item in result]
-        result = Blog.objects.filter(blog_content__icontains=qString).order_by('-blog_date')
-        results.extend([item for item in result if item not in results])
-        result = Blog.objects.filter(blog_author__username__icontains=qString).order_by('-blog_date')
-        results.extend([item for item in result if item not in results])
-        results : Pages = paginateResults(req,results or [],ResultPerPage,'blogsearch')
-        return render(req, 'search.html', {'qs': qString or '' , 'blogs': prettyFilter(results.listItem), 'pages':range(results.pages), 'p': results.p })
-    return render(req,'search.html',{})
-
 def postComment(req: HttpRequest):
     """End point to post a comment"""
     if req.method == 'POST' and req.user.is_authenticated and req.POST.get('comment') is not None and req.POST.get('postId') is not None :
         try: 
-            Text = req.POST['comment']
-            user = req.user
             postId = req.POST['postId']
+            post = Blog.objects.get(blog_id=postId)
+            import re
+            Text = re.sub(r'/s+',' ',req.POST['comment'])
+            user = req.user
             ParentComment = None
             if req.POST.get('parentId') != None:
                 try:
@@ -205,7 +153,6 @@ def postComment(req: HttpRequest):
                     ParentComment = ParentComment.parent or ParentComment
                 except Comment.DoesNotExist as e:
                     ParentComment = None
-            post = Blog.objects.get(blog_id=postId)
             comment = Comment(Text=Text,user=user,post=post,parent=ParentComment)
             comment.save()
             return redirect(req.META.get('HTTP_REFERER') or '/')
@@ -214,44 +161,8 @@ def postComment(req: HttpRequest):
             return HttpResponseBadRequest("Bad request")
     return redirect(req.META.get('HTTP_REFERER') or '/')
 
-def userProfile(req: HttpRequest):
-    """endpoint to update user profile"""
-    if req.method == "GET":
-        userImage = None
-        if req.user.is_authenticated:
-            userModel: UserModel = UserModel.objects.get(user=req.user)
-            userImage = userModel.avatar_image if str(userModel.avatar_image) != '' else None
-            userAbout = userModel.about or ''
-        return render(req,'profile.html',{'userImage': userImage, 'userAbout': userAbout}) if req.user.is_authenticated else redirect('blogLogin')
-    elif req.method == "POST" and req.user.is_authenticated:
-        try:
-            user: User = User.objects.get(username=req.user.username)
-            postObject: QueryDict = req.POST
-            requestedUsername = postObject.get('username')
-            requestedImage = req.FILES.get('user_image')
-            removeImage = postObject.get('removeImage')
-            if requestedUsername and requestedUsername != req.user.username :
-                try:
-                    User.objects.get(username=requestedUsername)
-                    return HttpResponseForbidden('Username is not available')
-                except User.DoesNotExist as e:
-                    user.username = requestedUsername
-            if requestedImage != None or removeImage:
-                try:
-                    userModel: UserModel = UserModel.objects.get(user=req.user)
-                    requestedImage = None if removeImage else ( requestedImage or userModel.avatar_image)
-                    userModel.avatar_image = requestedImage
-                    userModel.about = postObject.get('about') or userModel.about
-                    userModel.save()
-                except UserModel.DoesNotExist as e:
-                    pass
-            user.first_name = postObject.get('firstName') or user.first_name
-            user.last_name = postObject.get('lastName') or user.last_name
-            user.save()
-            return redirect('blogindex')
-        except Exception as e:
-            return InternalServerError(e)
-    else: return HttpResponseForbidden("Forbidden")
+def pricing(req: HttpRequest):
+    return render(req,'pricing.html')
 
 def resetPassword(req: HttpRequest):
     """endpoint to reset password"""
@@ -298,14 +209,21 @@ def resetPasswordLink(req: HttpRequest, uid: str,token: str):
     from django.utils.encoding import force_text
     from django.utils.http import urlsafe_base64_decode 
     if req.method == 'GET':
+        userImage = None
         try:
             username = force_text(urlsafe_base64_decode(uid))
             user: User = User.objects.get(username=username)
-           
+            userModel: UserModel = UserModel.objects.get(user = user)
+            userImage = userModel.avatar_image
         except User.DoesNotExist as e:
             return redirect('/')
+        except UserModel.DoesNotExist as e:
+            userImage = None
+        except Exception as e:
+            print(e)
+            return InternalServerError(e)
         return (
-            render(req,'reset-password.html', {'userImage': None, 'isResetLink': True, 'uid': uid, 'token':token})
+            render(req,'reset-password.html', {'user':user,'userImage': userImage, 'isResetLink': True, 'uid': uid, 'token':token})
         )
 
     if req.method == 'POST':
@@ -322,12 +240,52 @@ def resetPasswordLink(req: HttpRequest, uid: str,token: str):
                 user.set_password(new_passsword)
                 user.save()
                 mailResetPasswordSuccessfully(user=user)
-                return HttpResponse('Your Password has been reset successfully')
+                return HttpResponse('Ok')
             else: return redirect('blogindex')
         except(TypeError, ValueError, OverflowError, User.DoesNotExist) as e:
             return HttpResponse('link is invalid!')
         except Exception as e:
             return InternalServerError(e)
+
+def resetEmailLink(req:HttpRequest, uid:str,email:str, token:str):
+    from django.utils.encoding import force_text
+    from django.utils.http import urlsafe_base64_decode 
+    if req.method == 'GET':
+        try:
+            username = force_text(urlsafe_base64_decode(uid))
+            user: User = User.objects.get(username=username)
+            if not user: return HttpResponseForbidden('Invalid Request')
+            if not email_token.check_token(user=user,token=token): 
+                return HttpResponseForbidden('Invalid Request')
+            update_email = force_text(urlsafe_base64_decode(email))
+            if not isEmail(update_email): return HttpResponseBadRequest('Invalid Email Address')
+            user.email = update_email
+            user.save()
+            logout(req)
+            login(req,user)
+            mailEmailResetSuccessfully(user)
+            return redirect('blogindex')
+        except User.DoesNotExist as e:
+            return HttpResponseForbidden('Invalid Request')
+        except Exception as e:
+            print(e)
+            return InternalServerError(e)
+    return redirect('/')
+
+def search(req: HttpRequest):
+    """Endpoint to paginate user"""
+    qString = req.GET.get('q')
+    results = []
+    if qString != None and len(qString) != 0:
+        result = Blog.objects.filter(blog_title__icontains=qString).order_by('-blog_date')
+        results = [ item  for item in result]
+        result = Blog.objects.filter(blog_content__icontains=qString).order_by('-blog_date')
+        results.extend([item for item in result if item not in results])
+        result = Blog.objects.filter(blog_author__username__icontains=qString).order_by('-blog_date')
+        results.extend([item for item in result if item not in results])
+        results : Pages = paginateResults(req,results or [],ResultPerPage,'blogsearch')
+        return render(req, 'search.html', {'qs': qString or '' , 'blogs': prettyFilter(results.listItem), 'pages':range(results.pages), 'p': results.p })
+    return render(req,'search.html',{})
 
 def sendPasswordResetLink(req: HttpRequest):
     """Send Password resetlink for not logged in user"""
@@ -342,6 +300,59 @@ def sendPasswordResetLink(req: HttpRequest):
         except Exception as e:
             return InternalServerError(e)
     return render(req,'send_passwordreset_email_form.html')
+
+def sendEmailResetLink(req:HttpRequest):
+    """Send Email resetlink to user"""
+    if req.method == 'POST':
+        newEmail = req.POST.get('newEmail')
+        if not req.user.is_authenticated or not req.POST.get('password') or not newEmail or not isEmail(newEmail):
+            return HttpResponseBadRequest("Bad Request")
+        try:
+            user = authenticate(username=req.user.username,password=req.POST['password'])
+            if not user: return HttpResponseForbidden('Invalid Credentials')
+            sendEmailResetEmail(req,user,newEmail)
+            return redirect('/')
+        except User.DoesNotExist as e:
+            return HttpResponseBadRequest("User not found")
+        except Exception as e:
+            return InternalServerError(e)
+    return render(req,'send_email_reset_form.html') if req.user.is_authenticated else redirect('blogindex')
+
+def signUp(req :HttpRequest):
+    """End to signup the user"""
+    if req.method == 'POST':
+        try:
+            body = req.POST
+            image_file = req.FILES.get('user_image')
+            about = body.get('about')
+            fname = body['firstName']
+            lname = body['lastName']
+            username = body['username']
+            email = body['email']
+            if not username.isalnum(): raise ValueError("Username must be alphanumeric")
+            if not isEmail(email): raise ValueError("Enter a vaid email")
+            if User.objects.get(Q(username=username)|Q(email=email)):
+                return HttpResponseForbidden('User already exists')
+        except User.DoesNotExist as e:
+            try: 
+                # If no user with this email and username save the user as not verified
+                newUser : User = User.objects.create_user(first_name=fname,last_name=lname,username=username,email=email)
+                newUser.set_password('')
+                newUser.is_active = False
+                newUser.save()
+                userModel : UserModel = UserModel.objects.create(user=newUser,avatar_image=image_file,about=about)
+                userModel.save()
+                ## email body to send
+                sendVerificationEmail(req,newUser,userModel)
+                #============end email============#
+                return HttpResponse('OK')
+            except Exception as e:
+                return InternalServerError(e)
+        except ValueError as e:
+            return HttpResponseBadRequest(e)
+        except Exception as e:
+            return InternalServerError(e)
+    return render(req,'signup.html') if not req.user.is_authenticated else redirect('blogindex')
 
 @csrf_exempt
 def uploadImage(request: HttpRequest):
@@ -360,5 +371,41 @@ def uploadImage(request: HttpRequest):
         return render(request,'s.html') 
     else:  raise Http404("Page not found")
 
-def updateEmail(req :HttpRequest):
-    return redirect('blogindex')
+def userProfile(req: HttpRequest):
+    """endpoint to update user profile"""
+    if req.method == "GET":
+        userImage = None
+        if req.user.is_authenticated:
+            userModel: UserModel = UserModel.objects.get(user=req.user)
+            userImage = userModel.avatar_image if str(userModel.avatar_image) != '' else None
+            userAbout = userModel.about or ''
+        return render(req,'profile.html',{'userImage': userImage, 'userAbout': userAbout}) if req.user.is_authenticated else redirect('blogLogin')
+    elif req.method == "POST" and req.user.is_authenticated:
+        try:
+            user: User = User.objects.get(username=req.user.username)
+            postObject: QueryDict = req.POST
+            requestedUsername = postObject.get('username')
+            requestedImage = req.FILES.get('user_image')
+            removeImage = postObject.get('removeImage')
+            if requestedUsername and requestedUsername != req.user.username :
+                try:
+                    User.objects.get(username=requestedUsername)
+                    return HttpResponseForbidden('Username is not available')
+                except User.DoesNotExist as e:
+                    user.username = requestedUsername
+            if requestedImage != None or removeImage:
+                try:
+                    userModel: UserModel = UserModel.objects.get(user=req.user)
+                    requestedImage = None if removeImage else ( requestedImage or userModel.avatar_image)
+                    userModel.avatar_image = requestedImage
+                    userModel.about = postObject.get('about') or userModel.about
+                    userModel.save()
+                except UserModel.DoesNotExist as e:
+                    pass
+            user.first_name = postObject.get('firstName') or user.first_name
+            user.last_name = postObject.get('lastName') or user.last_name
+            user.save()
+            return redirect('blogindex')
+        except Exception as e:
+            return InternalServerError(e)
+    else: return HttpResponseForbidden("Forbidden")

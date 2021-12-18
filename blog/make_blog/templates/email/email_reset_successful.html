@@ -1,0 +1,13 @@
+{% autoescape on %}
+Hi {{user.get_full_name}},<br>
+Your email address for account with username <b>{{user.username}}</b> has been changed successfully on <u>
+    {{ date|date:"D d M Y" }} {{ date|time:"H:i" }}
+</u>
+<br>
+<b>
+Thanks 
+</b>
+<em>
+Team Cool Developer
+</em>
+{% endautoescape %}

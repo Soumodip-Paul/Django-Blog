@@ -53,7 +53,7 @@
 						<ul class="dropdown-menu">
 							{% if userImage != None and userImage != '' %}<li><img src="/media/{{userImage}}" alt="Profile" width="72" height="72" class="mx-auto mb-2 d-block rounded-circle"></li>{% endif %}
 							<li><a class="dropdown-item {% block blog_profile %}{% endblock %}" href="/profile">Profile</a></li>
-							<li><a class="dropdown-item {% block blog_update_email %}{% endblock %}" href="/update-email">Update Email</a></li>
+							<li><a class="dropdown-item {% block blog_update_email %}{% endblock %}" href="/reset-email">Update Email</a></li>
 							<li><hr class="dropdown-divider"></li>
 							{% if user.is_staff %}
 							<li><a class="dropdown-item" href="/admin">Admin Panel</a></li>

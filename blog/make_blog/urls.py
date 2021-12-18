@@ -16,10 +16,11 @@ urlpatterns = [
     path('post-comment', postComment,name='postComment'),
     path('pricing/', pricing,name='blogpricing'),
     path('profile', userProfile,name='userProfile'),
+    path('reset-email', sendEmailResetLink,name='resetEmailSendLink'),
+    path('reset-email/<str:uid>/<str:email>/<str:token>', resetEmailLink,name='reset-email'),
     path('reset-password', resetPassword,name='resetPassword'),
     path('reset-password/<str:uid>/<str:token>', resetPasswordLink,name='reset-password'),
     path('signup', signUp,name='userSignUp'),
     path('search', search,name='blogsearch'),
     path('upload-image', uploadImage,name='upload_image'),
-    path('update-email',updateEmail,name='updateEmail'),
 ]

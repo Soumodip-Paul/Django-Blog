@@ -10,33 +10,42 @@ from datetime import datetime
 from .models import UserModel
 
 password_token = PasswordResetTokenGenerator()
+email_token = PasswordResetTokenGenerator()
 
 def mailResetPasswordSuccessfully(user : User) -> None :
-    fname = user.first_name
-    uname = user.username
-    email=user.email
-    subject = "Password Reset for " + uname
-    message = str(
-    "<em>Dear {fname},\n</em>Your Password for account having <u><strong>username = {uname}</strong></u> has been changed on {date} successfully"
-    .format(fname=fname,uname=uname,date=datetime.now().strftime("%A %d %B %Y "))
+    subject = "Password Reset for " + user.username
+    message = render_to_string('email/email_passord_reset_successful.html',{'user':user,'date':datetime.now()})
+    mail(user.email,subject,message)
+
+def mailEmailResetSuccessfully(user: User) -> None:
+    mail(user.email,"Email Changed for account "+user.get_username(),
+    render_to_string('email/email_reset_successful.html', {'user':user, 'date':datetime.now()})
     )
-    mail(email,subject,message)
 
 def sendVerificationEmail(req:HttpRequest,user: User,userModel: UserModel):
     token = password_token.make_token(user=user)
-    mail(user.email,"User Verification",render_to_string('email_temp.html',{
+    mail(user.email,"User Verification",render_to_string('email/email_temp.html',{
         'uid': str(userModel.id),
         'domain': get_current_site(req).domain,
         'token': token
         }))
 
+def sendEmailResetEmail(req:HttpRequest,user:User, email:str):
+    mail(email,"New Email verification",render_to_string('email/email-email-reset.html',{
+        'uid': urlsafe_base64_encode(force_bytes(user.get_username())), 
+        'email': urlsafe_base64_encode(force_bytes(email)),
+        'domain': get_current_site(req).domain,
+        'token': email_token.make_token(user=user),
+        'user': user
+    }))
+
 def sendPasswordResetEmail(req:HttpRequest,user: User):
-    mail(user.email,"Reset password",render_to_string('email_password_reset.html',{
+    mail(user.email,"Reset password",render_to_string('email/email_password_reset.html',{
         'uid': urlsafe_base64_encode(force_bytes(user.get_username())), 
         'domain': get_current_site(req).domain,
         'token': password_token.make_token(user=user),
         'user': user
-        }))
+    }))
 
 def mail(email:str,subject:str,message:str) -> None:
     try:
