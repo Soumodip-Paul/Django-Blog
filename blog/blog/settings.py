@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django_otp',
     'django_otp.plugins.otp_totp',
     'django_otp.plugins.otp_hotp',
-    'make_blog'
+    'make_blog.apps.MakeBlogConfig',
 ]
 
 MIDDLEWARE = [
@@ -126,6 +126,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/assets/'
+STATIC_ROOT = BASE_DIR / 'assets'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]

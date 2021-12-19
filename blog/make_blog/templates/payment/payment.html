@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processing payment</title>
+</head>
+<body class="p-0 m-0">
+    
+    <div id="paytm-checkoutjs" class="container my-4"><p>Do not refresh... <br> Or Press back button</p></div>
+
+<script type="application/javascript" src="https://securegw-stage.paytm.in/merchantpgpui/checkoutjs/merchants/WorldP64425807474247.js" crossorigin="anonymous" ></script>
+<script>
+  function onScriptLoad(){
+      var config = {
+        "root": "#paytm-checkoutjs",
+        "flow": "DEFAULT",
+        "data": {
+        "orderId": "{{order_id}}", /* update order id */
+        "token": "{{res.response_object.body.txnToken}}", /* update token value */
+        "tokenType": "TXN_TOKEN",
+        "amount": "{{price}}" /* update amount */
+        },
+        "handler": {
+          "notifyMerchant": function(eventName,data){
+            console.log("notifyMerchant handler function called");
+            console.log("eventName => ",eventName);
+            console.log("data => ",data);
+          } 
+        }
+      };
+
+      if(window.Paytm && window.Paytm.CheckoutJS){
+          window.Paytm.CheckoutJS.onLoad(function excecuteAfterCompleteLoad() {
+              // initialze configuration using init method 
+              console.log(1)
+              window.Paytm.CheckoutJS.init(config).then(function onSuccess() {
+                  // after successfully updating configuration, invoke JS Checkout
+                  console.log(2)
+                  window.Paytm.CheckoutJS.invoke();
+              }).catch(function onError(error){
+                  console.log("error => ",error);
+              });
+          });
+      } 
+  }
+  onScriptLoad()
+</script>
+</body>
+</html>

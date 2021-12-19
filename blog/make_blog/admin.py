@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.http.request import HttpRequest
-from .models import Comment, ContactClass,BlogCategory,Blog,UserModel,Images
+from .models import Comment, ContactClass,BlogCategory,Blog, Pricing, TransctionDetail,UserModel,Images, PaymentDetail
 from .utils import urlify
 
 # Register your models here.
@@ -52,7 +52,7 @@ class BlogAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
     class Media: 
         # css = ["css/blog_style.css"]
-        js = ["js/tinymce.js"]
+        js = ["js/prism.js","js/tinymce.js"]
         css = {
         'all': ("css/blog_style.css",)
          }
@@ -81,6 +81,42 @@ class ContactModel(admin.ModelAdmin):
 class ImageAdmin(admin.ModelAdmin):
     list_display = ['image_id', 'image','timestamp']
     search_fields = ['image_id', 'image','timestamp']
+
+@admin.register(PaymentDetail)
+class PaymentDetailsAdmin(admin.ModelAdmin):
+    list_display = ['id', 'ORDERID' , 'TXNAMOUNT', 'TXNDATE']
+    list_display_links = ['id','ORDERID']
+    list_filter = 'STATUS',
+    search_fields = ['id','TXNAMOUNT','TXNDATE','RESPCODE','ORDERID']
+    def has_add_permission(self, request: HttpRequest) -> bool:
+        return False
+    def has_change_permission(self, request: HttpRequest, obj = ...) -> bool:
+        return False
+    def has_delete_permission(self, request: HttpRequest, obj = ...) -> bool:
+        return False
+
+@admin.register(Pricing)
+class PriceAdmin(admin.ModelAdmin):
+    list_display = ['id','plan_name','plan_price']
+    list_display_links = ['id', 'plan_name']
+    list_editable = ['plan_price']
+    search_field = ['id','plan_name','plan_price']
+    def has_change_permission(self, request: HttpRequest, obj  = ...) -> bool:
+        return request.user.is_superuser
+    def has_delete_permission(self, request: HttpRequest, obj = ...) -> bool:
+        return request.user.is_superuser
+    def has_add_permission(self, request: HttpRequest, obj = ...) -> bool:
+        return request.user.is_superuser
+
+@admin.register(TransctionDetail)
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = ['order_id','user','amount','timestamp']
+    search_fields= ['order_id','user','timestamp','status']
+    list_filter = ['status']
+    def has_add_permission(self, request: HttpRequest) -> bool:
+        return False
+    def has_change_permission(self, request: HttpRequest, obj = ...) -> bool:
+        return False
 
 @admin.register(UserModel)
 class UserModelClass(admin.ModelAdmin):

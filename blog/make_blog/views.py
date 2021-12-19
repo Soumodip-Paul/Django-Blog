@@ -122,11 +122,16 @@ def features(req: HttpRequest):
 
 def loginUser(req: HttpRequest):
     """End point to login a user"""
-    if req.method == 'POST':
+    if req.method == 'POST' and not req.user.is_authenticated:
         username = req.POST.get('username')
         password = req.POST.get('password')
         user: User = authenticate(username=username,password=password)
         if user is not None:
+            try:
+                userModel: UserModel = UserModel.objects.get(user=user)
+            except UserModel.DoesNotExist as e:
+                userModel = UserModel.objects.create(user=user)
+                userModel.save()
             login(req,user)
             return redirect( req.POST.get('redirect') or req.META.get('HTTP_REFERER') or '/')
         else: return HttpResponseBadRequest('Incorrect Credentials')
@@ -213,6 +218,8 @@ def resetPasswordLink(req: HttpRequest, uid: str,token: str):
         try:
             username = force_text(urlsafe_base64_decode(uid))
             user: User = User.objects.get(username=username)
+            if not password_token.check_token(user, token):
+                return HttpResponseForbidden('Invalid Link')
             userModel: UserModel = UserModel.objects.get(user = user)
             userImage = userModel.avatar_image
         except User.DoesNotExist as e:
@@ -223,7 +230,7 @@ def resetPasswordLink(req: HttpRequest, uid: str,token: str):
             print(e)
             return InternalServerError(e)
         return (
-            render(req,'reset-password.html', {'user':user,'userImage': userImage, 'isResetLink': True, 'uid': uid, 'token':token})
+            render(req,'reset-password.html', {'user':user,'userImage': userImage, 'isResetLink': True, 'uid': uid, 'token':password_token.make_token(user=user)})
         )
 
     if req.method == 'POST':

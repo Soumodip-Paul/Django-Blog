@@ -1,5 +1,5 @@
 {% extends 'temp.html' %}
-{% block desc %}{{blog_desc}}{% endblock %}
+{% block desc %}{{blog_desc|truncatewords:30}}{% endblock %}
 {% block style %}
 <link rel="stylesheet" href="/assets/css/prism.css">{% endblock %}
 {% block title %}{{blog.blog_title}} - Cool Developer{% endblock %}
@@ -31,7 +31,7 @@
 						<div class="col-md-10 text-center hero-text">
 							<h1 data-aos="fade-up" data-aos-delay="">{{blog.blog_title}}</h1>
 							<p class="mb-5" data-aos="fade-up" data-aos-delay="100">{{blog.blog_date}} &bullet; By <a
-									href="#" class="text-white text-capitalize">{{blog.blog_author}}</a></p>
+									href="#" class="text-white text-capitalize">{{blog.blog_author.get_full_name}}</a></p>
 						</div>
 					</div>
 				</div>

@@ -75,6 +75,26 @@ tinymce.init({
   contextmenu: 'link image imagetools table',
   skin: useDarkMode ? 'oxide-dark' : 'oxide',
   content_css: useDarkMode ? 'dark' : 'default',
+  codesample_languages: [
+    { text: 'Bash', value: 'bash' },
+    { text: 'C', value: 'c' },
+    { text: 'C#', value: 'csharp' },
+    { text: 'C++', value: 'cpp' },
+    { text: 'CSS', value: 'css' },
+    { text: 'Django', value: 'django' },
+    { text: 'HTML/XML', value: 'markup' },
+    { text: 'Java', value: 'java' },
+    { text: 'JavaScript', value: 'javascript' },
+    { text: 'Kotlin', value: 'kt' },
+    { text: 'PHP', value: 'php' },
+    { text: 'Python', value: 'python' },
+    { text: 'React', value: 'jsx'},
+    { text: 'React TypeScript', value: 'tsx'},
+    { text: 'Ruby', value: 'ruby' },
+    { text: 'SQL', value: 'sql' },
+    { text: 'TypeScript', value: 'ts' },
+  ],
+  codesample_global_prismjs: true,
   content_style: `
   @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
   body { font-family:Helvetica,Arial,sans-serif; font-size:14px }

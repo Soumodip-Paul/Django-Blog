@@ -8,3 +8,5 @@ db.sqlite3
 __pycache__
 # secret contain mailing credentials and other secrets
 secret.py
+# todo list
+todo.*

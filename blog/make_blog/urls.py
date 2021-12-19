@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import *
+from . import payments
 
 urlpatterns = [
     path('', index,name='blogindex'),
@@ -14,8 +15,9 @@ urlpatterns = [
     path('login', loginUser,name='blogLogin'),
     path('logout', logoutUser,name='blogLogout'),
     path('post-comment', postComment,name='postComment'),
-    path('pricing/', pricing,name='blogpricing'),
+    path('pricing', payments.startPayment,name='blogpricing'),
     path('profile', userProfile,name='userProfile'),
+    path('payment/', payments.validate,name='payment'),
     path('reset-email', sendEmailResetLink,name='resetEmailSendLink'),
     path('reset-email/<str:uid>/<str:email>/<str:token>', resetEmailLink,name='reset-email'),
     path('reset-password', resetPassword,name='resetPassword'),

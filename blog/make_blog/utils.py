@@ -22,7 +22,7 @@ class InternalServerError(HttpResponse):
     status_code = 500
     def __init__(self, content: object = ..., *args, **kwargs) -> None:
         print(content)
-        super().__init__(content=content, *args, **kwargs)
+        super().__init__(content="Internal server error", *args, **kwargs)
 
 def isEmail(email : str) -> bool:
     if(re.fullmatch(regex, email)):

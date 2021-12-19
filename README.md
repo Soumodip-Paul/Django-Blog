@@ -13,6 +13,7 @@ and create a file in `./blog/blog/secret.py` file containing the following code
 
 smtp_mail:str = "your email address"
 smtp_pass:str = " Your Password "
+site_name:str = 'Your domain name for this website' 
 
 ```
 

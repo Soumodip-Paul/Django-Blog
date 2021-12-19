@@ -47,8 +47,8 @@ Welcome to django blog
           </div>
         </div>
         <div class="row align-items-stretch">
-
-          <div class="col-lg-4 mb-4 mb-lg-0">
+          <form  action="" method="post" class="col-lg-4 mb-4 mb-lg-0">
+            {% csrf_token %}
             <div class="pricing h-100 text-center">
               <span>&nbsp;</span>
               <h3>Basic</h3>
@@ -61,8 +61,9 @@ Welcome to django blog
                 <p><a href="#" class="btn btn-white">Choose Plan</a></p>
               </div>
             </div>
-          </div>
-          <div class="col-lg-4 mb-4 mb-lg-0">
+          </form>
+          <form  action="" method="post" class="col-lg-4 mb-4 mb-lg-0">
+            {% csrf_token %}
             <div class="pricing h-100 text-center popular">
               <span class="popularity">Most Popular</span>
               <h3>Professional</h3>
@@ -73,10 +74,10 @@ Welcome to django blog
               </ul>
               <div class="price-cta">
                 <strong class="price">$9.95/month</strong>
-                <p><a href="#" class="btn btn-white">Choose Plan</a></p>
+                <p><button type="submit" class="btn btn-white">Choose Plan</button></p>
               </div>
             </div>
-          </div>
+          </form>
           <div class="col-lg-4 mb-4 mb-lg-0">
             <div class="pricing h-100 text-center">
               <span class="popularity">Best Value</span>
@@ -88,7 +89,7 @@ Welcome to django blog
               </ul>
               <div class="price-cta">
                 <strong class="price">$199.95/month</strong>
-                <p><a href="#" class="btn btn-white">Choose Plan</a></p>
+                <p><button type="submit" class="btn btn-white">Choose Plan</button></p>
               </div>
             </div>
           </div>

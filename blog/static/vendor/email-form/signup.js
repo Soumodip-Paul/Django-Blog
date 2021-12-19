@@ -67,7 +67,7 @@
 			const data = await response.text()
 			if (response.ok && !response.redirected) {
 				thisForm.querySelector('.loading').classList.remove('d-block');
-				if (data.trim() == 'OK') {
+				if (data.trim().toLocaleUpperCase() == 'OK') {
 					thisForm.querySelector('.sent-message').classList.add('d-block');
 					setTimeout(() => thisForm.querySelector('.sent-message').classList.remove('d-block'),500)
 					thisForm.reset();
