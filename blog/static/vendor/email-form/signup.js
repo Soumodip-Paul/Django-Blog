@@ -69,7 +69,7 @@
 				thisForm.querySelector('.loading').classList.remove('d-block');
 				if (data.trim().toLocaleUpperCase() == 'OK') {
 					thisForm.querySelector('.sent-message').classList.add('d-block');
-					setTimeout(() => thisForm.querySelector('.sent-message').classList.remove('d-block'),500)
+					setTimeout(() => thisForm.querySelector('.sent-message').classList.remove('d-block'),3000)
 					thisForm.reset();
 				} else {
 					throw new Error(data ? data : 'Form submission failed and no error message returned from: ' + action);

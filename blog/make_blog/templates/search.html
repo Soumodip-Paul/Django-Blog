@@ -2,6 +2,38 @@
 {% block search_active %}active{% endblock %}
 {% block desc %}Search Results for your query '{{qs}}'{% endblock %}
 {% block title %}Search Results for {{qs}}{% endblock %}
+{% block style %}
+<style>
+.pulse-ring {
+  content: '';
+  width: 24px;
+  height: 24px;
+  background: #90c6fc6b;
+  border-radius: 50%;
+  position: absolute;
+  animation: pulsate infinite 1.5s;
+  z-index: -10;
+}
+
+@keyframes pulsate {
+  0% {
+    -webkit-transform: scale(1, 1);
+  }
+  25% {
+	-webkit-transform: scale(2, 2);
+  }
+  50% {
+    -webkit-transform: scale(1.5, 1.5);
+  }
+  75% {
+    -webkit-transform: scale(3, 3);
+  }
+  100% {
+    -webkit-transform: scale(1, 1);
+  }
+}
+</style>
+{% endblock %}
 {% block main %}
 <main id="main">
 	<!-- ======= Blog Section ======= -->
@@ -25,13 +57,17 @@
 					<div class="row justify-content-center">
 						<div class="col-md-7 text-center hero-text">
 							<h1 data-aos="fade-up" data-aos-delay="">Search Results</h1>
-							<form action="/search" method="get" class="input-group mb-3">
+							<form action="/search" method="get" class="input-group mb-3" id="searchForm">
 								<input type="text" class="form-control" placeholder="Search Here..."
 									aria-label="Search Here" aria-describedby="search_button" name="q"
-									value="{{qs}}" style="border-radius: 50rem 0 0 50rem;">
-								<button class="btn btn-primary"
-									style="padding-top: 0px !important; padding-bottom: 0px !important;border-radius: 0 50rem 50rem 0;" type="submit"
-									id="search_button">
+									value="{{qs}}" style="border-radius: 50rem 0 0 50rem;" id="qs">
+								<div class="btn btn-primary d-flex align-items-center"
+									style="padding-top: 0px !important; padding-bottom: 0px !important;border-radius: 0 50rem 50rem 0;" id="search_button">
+									<span class="position-absolute" style="left: -2rem; color: #232324;" onclick="recogniseText()">
+										<span class="" id="pulseRing"></span>
+										<svg focusable="false" height="24px" viewBox="0 0 24 24" width="24px" xmlns="http://www.w3.org/2000/svg"><path fill="#4285f4" d="m12 15c1.66 0 3-1.31 3-2.97v-7.02c0-1.66-1.34-3.01-3-3.01s-3 1.34-3 3.01v7.02c0 1.66 1.34 2.97 3 2.97z"></path><path fill="#34a853" d="m11 18.08h2v3.92h-2z"></path><path fill="#fbbc05" d="m7.05 16.87c-1.27-1.33-2.05-2.83-2.05-4.87h2c0 1.45 0.56 2.42 1.47 3.38v0.32l-1.15 1.18z"></path><path fill="#ea4335" d="m12 16.93a4.97 5.25 0 0 1 -3.54 -1.55l-1.41 1.49c1.26 1.34 3.02 2.13 4.95 2.13 3.87 0 6.99-2.92 6.99-7h-1.99c0 2.92-2.24 4.93-5 4.93z"></path></svg>
+									</span>
+								<button type="submit" style="background: none; border: none; outline: none;">
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
 										style="fill: var(--bs-white);">
 										<path
@@ -39,6 +75,7 @@
 										</path>
 									</svg>
 								</button>
+								</div>
 							</form>
 							{% if qs|length != 0 %}
 							<p class="mb-5" data-aos="fade-up" data-aos-delay="100"> Total {{blogs|length}} results found for "{{qs}}"
@@ -103,22 +140,11 @@
 	</section>
 
 	<!-- ======= CTA Section ======= -->
-	<section class="section cta-section">
-		<div class="container">
-			<div class="row align-items-center">
-				<div class="col-md-6 me-auto text-center text-md-start mb-5 mb-md-0">
-					<h2>Starts Publishing Your Apps</h2>
-				</div>
-				<div class="col-md-5 text-center text-md-end">
-					<p><a href="#" class="btn d-inline-flex align-items-center"><i class="bx bxl-apple"></i>
-							<span>App store</span></a> <a href="#" class="btn d-inline-flex align-items-center">
-							<i class="bx bxl-play-store"></i>
-							<span>Google play</span>
-						</a></p>
-				</div>
-			</div>
-		</div>
-	</section><!-- End CTA Section -->
+	{% include 'component/cta.html' %}
+	<!-- End CTA Section -->
 
 </main>
+{% endblock %}
+{% block script %}
+<script src="/assets/js/speech.js"></script>
 {% endblock %}

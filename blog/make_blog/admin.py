@@ -1,3 +1,4 @@
+from django import template
 from django.contrib import admin
 from django.http.request import HttpRequest
 from .models import Comment, ContactClass,BlogCategory,Blog, Pricing, TransctionDetail,UserModel,Images, PaymentDetail
@@ -97,7 +98,7 @@ class PaymentDetailsAdmin(admin.ModelAdmin):
 
 @admin.register(Pricing)
 class PriceAdmin(admin.ModelAdmin):
-    list_display = ['id','plan_name','plan_price']
+    list_display = ['id','plan_name','plan_price','plan_users']
     list_display_links = ['id', 'plan_name']
     list_editable = ['plan_price']
     search_field = ['id','plan_name','plan_price']

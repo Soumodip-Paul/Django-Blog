@@ -17,6 +17,15 @@ ORDER_STATUS =[
     ('w', 'Payment withdrawn'),
 ]
 
+STAR_RATING = [
+    (0, 'NO RATING'),
+    (1, '1 STAR'),
+    (2, '2 STAR'),
+    (3, '3 STAR'),
+    (4, '4 STAR'),
+    (5, '5 STAR'),
+]
+
 def get_sentinel_user():
     return get_user_model().objects.get_or_create(username="nouser")[0]
 
@@ -114,6 +123,7 @@ class Pricing(models.Model):
     plan_name = models.CharField(max_length=50,default="",unique=True)
     plan_price = models.PositiveIntegerField(default=0,unique=True,help_text="All prices in indian rupees")
     plan_desc = models.TextField(default='')
+    plan_users = models.IntegerField(default=0)
     def __str__(self) -> str:
         return self.plan_name
 
@@ -137,5 +147,8 @@ class UserModel(models.Model):
     avatar_image = models.ImageField(upload_to="user/images/%Y/%m/%d",default="",null=True,blank=True)
     about = models.TextField(null=True,blank=True)
     membership = models.ForeignKey(Pricing,on_delete=models.SET_NULL,null=True,blank=True)
+    ratings = models.TextField(default='')
+    rating_title = models.CharField(default='',max_length=255)
+    star_ratings = models.CharField(max_length=1,default=0,choices=STAR_RATING)
     def __str__(self) -> str:
         return str(self.user)

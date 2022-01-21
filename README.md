@@ -43,6 +43,7 @@ To run this project, you will need to add the following environment variables to
 smtp_mail:str = "your email address"
 smtp_pass:str = " Your Password "
 site_name:str = "Your domain name for this website"
+ResultPerPage:int = 6 # Default value
 ```
 
 

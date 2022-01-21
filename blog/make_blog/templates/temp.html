@@ -27,7 +27,7 @@
 	{% block style %}{% endblock %}
 </head>
 
-<body class="custom-scroll pe-0">
+<body class="custom-scroll pe-0" style="user-select: none;">
 	<!-- ======= Header ======= -->
 	<header id="header" class="fixed-top d-flex align-items-center">
 		<div class="container d-flex justify-content-between align-items-center">
@@ -54,6 +54,7 @@
 							{% if userImage != None and userImage != '' %}<li><img src="/media/{{userImage}}" alt="Profile" width="72" height="72" class="mx-auto mb-2 d-block rounded-circle"></li>{% endif %}
 							<li><a class="dropdown-item {% block blog_profile %}{% endblock %}" href="/profile">Profile</a></li>
 							<li><a class="dropdown-item {% block blog_update_email %}{% endblock %}" href="/reset-email">Update Email</a></li>
+							<li><a class="dropdown-item {% block blog_rating %}{% endblock %}" href="/rating">Rate Us</a></li>
 							<li><hr class="dropdown-divider"></li>
 							{% if user.is_staff %}
 							<li><a class="dropdown-item" href="/admin">Admin Panel</a></li>
@@ -156,7 +157,7 @@
 		class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></span>
 	{% if not request.user.is_authenticated%}
 	<div class="modal fade" id="modalSignIn" tabindex="100" aria-labelledby="modalDialogIn" aria-hidden="true">
-		<form class="modal-dialog no-scroll text-dark" id="modalLogin" action="/login" method="post">
+		<form class="modal-dialog no-scroll text-dark" id="modalLogin" action="/login" method="post" onsubmit="submitLogin(event)">
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title" id="modalDialogIn">Login Now</h5>
@@ -181,18 +182,36 @@
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-					<button type="submit" class="btn btn-primary">Login</button>
+					<button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Login</button>
 				</div>
 			</div>
 		</form>
 	</div>
 	{% endif %}
+	<div class="modal fade font-roboto" id="alertModal" tabindex="-1" aria-labelledby="alertModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+		  <div class="modal-content">
+			<div class="modal-header">
+			  <h5 class="modal-title" id="alertModalLabel">Alert</h5>
+			  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body text-dark">
+			  <p id="alertModalText">Test Modal</p>
+			</div>
+			<div class="modal-footer">
+			  <button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Close</button>
+			  <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+			</div>
+		  </div>
+		</div>
+	  </div>
 	<!-- Vendor JS Files -->
 	<script src="/assets/vendor/aos/aos.js"></script>
 	<script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 	<script src="/assets/vendor/swiper/swiper-bundle.min.js"></script>
 	<!-- Template Main JS File -->
 	<script src="/assets/js/main.js"></script>
+	<script src="/assets/js/login-modal.js"></script>
 	{% block script %}{% endblock %}
 </body>
 

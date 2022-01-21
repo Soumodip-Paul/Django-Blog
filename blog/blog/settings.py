@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+from .secret import site_name, smtp_mail, smtp_pass
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +26,7 @@ SECRET_KEY = 'django-insecure-gx1=&=)*z&nw)pp0$xw40$iy^w9pj()q(46@04-a%ja1pa2om0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1',  site_name.split(':')[0]]
 
 
 # Application definition
@@ -137,8 +138,6 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # EMAIL SETTINGS 
-
-from .secret import smtp_mail,smtp_pass
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'

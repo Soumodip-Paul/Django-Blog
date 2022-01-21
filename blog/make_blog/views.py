@@ -1,20 +1,23 @@
+try :
+    from blog.secret import ResultPerPage
+except ImportError as e:
+    ResultPerPage = 6
 from bs4 import BeautifulSoup
 from django.contrib.auth.models import User
-from django.contrib.auth import login,logout,authenticate, tokens
+from django.contrib.auth import login,logout,authenticate
 from django.db.models import Q
+from django.http import FileResponse
 from django.http.request import HttpRequest, QueryDict
 from django.http.response import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.shortcuts import redirect, render 
 from django.utils import timezone
+from django.utils.datastructures import MultiValueDictKeyError
 from django.views.decorators.csrf import csrf_exempt
+from blog.settings import BASE_DIR
 from uuid import *
 from .mail import mail, mailEmailResetSuccessfully, mailResetPasswordSuccessfully, sendEmailResetEmail, sendPasswordResetEmail,sendVerificationEmail,password_token,email_token
 from .models import Blog, BlogCategory, Comment, ContactClass, Images, UserModel
 from .utils import *
-
-
-ResultPerPage = 6
-""" Configure how many query result you want to show in each page """
 
 def index(req: HttpRequest):
     """Landing Page of website"""
@@ -120,6 +123,18 @@ def contact(req: HttpRequest):
 def features(req: HttpRequest):
     return render(req,'features.html')
 
+def favicon(req: HttpRequest):
+    file_location = BASE_DIR / 'static/img/favicon.ico'
+    try:    
+        
+        # sending response 
+        # response = HttpResponse(file_data, content_type='image/x-icon')
+        response = FileResponse(open(file_location,'rb'))
+    except IOError:
+        # handle file not exist case here
+        response = HttpResponseNotFound('<h1>File not exist</h1>')
+    return response
+
 def loginUser(req: HttpRequest):
     """End point to login a user"""
     if req.method == 'POST' and not req.user.is_authenticated:
@@ -165,9 +180,6 @@ def postComment(req: HttpRequest):
             print(e)
             return HttpResponseBadRequest("Bad request")
     return redirect(req.META.get('HTTP_REFERER') or '/')
-
-def pricing(req: HttpRequest):
-    return render(req,'pricing.html')
 
 def resetPassword(req: HttpRequest):
     """endpoint to reset password"""
@@ -323,7 +335,15 @@ def sendEmailResetLink(req:HttpRequest):
             return HttpResponseBadRequest("User not found")
         except Exception as e:
             return InternalServerError(e)
-    return render(req,'send_email_reset_form.html') if req.user.is_authenticated else redirect('blogindex')
+    if req.method == 'GET':
+        userImage = None
+        if req.user.is_authenticated :
+            try:
+                userModel : UserModel = UserModel.objects.get(user=req.user)
+                userImage = userModel.avatar_image
+            except Exception as e :
+                userImage = None
+        return render(req,'send_email_reset_form.html', {'userImage': userImage}) if req.user.is_authenticated else redirect('blogindex')
 
 def signUp(req :HttpRequest):
     """End to signup the user"""
@@ -416,3 +436,28 @@ def userProfile(req: HttpRequest):
         except Exception as e:
             return InternalServerError(e)
     else: return HttpResponseForbidden("Forbidden")
+
+def userRating(req: HttpRequest):
+    if req.method == 'POST' and req.user.is_authenticated :
+        try:
+            userModel : UserModel = UserModel.objects.get(user=req.user)
+            userModel.star_ratings = req.POST['rate']
+            userModel.rating_title = req.POST['title']
+            userModel.ratings = req.POST.get('description') or ''
+            userModel.save()
+            return redirect('/')
+        except UserModel.DoesNotExist as e :
+            return HttpResponseNotFound()
+        except MultiValueDictKeyError as e:
+            return HttpResponseBadRequest("Bad Request")
+        except Exception as e:
+            return InternalServerError(e)
+    elif req.method == 'GET' and req.user.is_authenticated :
+        try:
+            userModel : UserModel = UserModel.objects.get(user=req.user)
+            return render(req, 'rating.html', { 'rating' : userModel.star_ratings, 'description' : userModel.ratings, "range" : range(5) })
+        except UserModel.DoesNotExist as e :
+            return HttpResponseNotFound()
+        except Exception as e:
+            return InternalServerError(e)
+    return redirect('/')

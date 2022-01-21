@@ -1,7 +1,8 @@
+from django.http import HttpResponseNotAllowed
 from django.http.response import Http404, HttpResponseForbidden
 from django.contrib.auth.models import User
 from django.http.request import HttpRequest
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.shortcuts import render
 from django.utils import dateparse
 from django.views.decorators.csrf import csrf_exempt
@@ -9,9 +10,9 @@ from math import ceil
 from paytmchecksum import PaytmChecksum
 from paytmpg import LibraryConstants,MerchantProperty,UserInfo,Money,EChannelId,EnumCurrency,PaymentDetailsBuilder,Payment
 from random import random
-from .models import PaymentDetail, TransctionDetail,UserModel
+from .models import PaymentDetail, Pricing, TransctionDetail,UserModel
 from .utils import InternalServerError
-from blog import secret
+from blog.secret import site_name
 import logging
 
 mid = "WorldP64425807474247" # "YOUR_MID_HERE"
@@ -28,7 +29,7 @@ def start() :
 
     # Find your mid, key, website in your Paytm Dashboard at https://dashboard.paytm.com/next/apikeys
     # To be edited during production
-    callbackUrl = "http://"+ secret.site_name +"/payment/" # "MERCANT_CALLBACK_URL" 
+    callbackUrl = "http://"+ site_name +"/payment/" # "MERCANT_CALLBACK_URL" 
     MerchantProperty.set_callback_url(callbackUrl)
 
     MerchantProperty.initialize(environment, mid, key, client_id, website)
@@ -91,7 +92,21 @@ def startPayment(req: HttpRequest) :
             return HttpResponseForbidden("Not Valid")
         except Exception as e:
             return InternalServerError(e)
-    return render(req, 'pricing.html', {'success': False})
+    elif req.method == 'GET':
+        try:
+            prices = Pricing.objects.all().order_by('plan_price')
+            most_popular = prices.order_by('-plan_users')[0].plan_users
+            for price in prices :
+                if price.plan_users == most_popular: 
+                    price.most_popular = True
+                else: 
+                    price.most_popular = False
+            return render(req, 'pricing.html', {'success': False, 'prices' : prices[:3] })
+        except Exception as e: 
+            return InternalServerError(e)
+    elif req.method == "POST" and not req.user.is_authenticated:
+        return redirect('/login')
+    return HttpResponseNotAllowed("Not Allowed")
 
 @csrf_exempt
 def validate(req: HttpRequest):
@@ -124,7 +139,7 @@ def validate(req: HttpRequest):
                 ## Handle for success
                 tDetail.status = 's'
                 tDetail.save(update_fields=['status'])
-                return render(req, 'pricing.html', {'success': True})
+                return render(req, 'pricing.html', {'success': True, 'details': deatils})
             else:
                 ## Handle for failure
                 tDetail.status = 'f'
@@ -133,6 +148,7 @@ def validate(req: HttpRequest):
         except TransctionDetail.DoesNotExist as e:
             return render(req, 'pricing.html', {'success': False})
         except Exception as e:
+            print(e)
             return InternalServerError(e)
     else:
         return render(req, 'pricing.html', {'success': False})
