@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils.timezone import now
 import uuid
@@ -18,12 +19,12 @@ ORDER_STATUS =[
 ]
 
 STAR_RATING = [
-    (0, 'NO RATING'),
-    (1, '1 STAR'),
-    (2, '2 STAR'),
-    (3, '3 STAR'),
-    (4, '4 STAR'),
-    (5, '5 STAR'),
+    ('0', 'NO RATING'),
+    ('1', '1 STAR'),
+    ('2', '2 STAR'),
+    ('3', '3 STAR'),
+    ('4', '4 STAR'),
+    ('5', '5 STAR'),
 ]
 
 def get_sentinel_user():
@@ -72,6 +73,14 @@ class Blog(models.Model):
 
     def __str__(self) -> str:
         return self.blog_url
+
+class Feature(models.Model):
+    feature_name = models.CharField(default='',max_length=255,unique=True)
+    feature_details = models.TextField(default='')
+    feature_image = models.FileField(default='',upload_to='feature/image/%Y/%m/%d', validators=[FileExtensionValidator(['jpg', 'png', 'svg'])])
+    timestamp = models.DateTimeField(default=now)
+    def __str__(self) -> str:
+        return self.feature_name
 
 class Images(models.Model):
     """ Model to manage images """
@@ -147,8 +156,9 @@ class UserModel(models.Model):
     avatar_image = models.ImageField(upload_to="user/images/%Y/%m/%d",default="",null=True,blank=True)
     about = models.TextField(null=True,blank=True)
     membership = models.ForeignKey(Pricing,on_delete=models.SET_NULL,null=True,blank=True)
-    ratings = models.TextField(default='')
-    rating_title = models.CharField(default='',max_length=255)
-    star_ratings = models.CharField(max_length=1,default=0,choices=STAR_RATING)
+    ratings = models.TextField(null=True,blank=True)
+    rating_title = models.CharField(max_length=255,null=True,blank=True)
+    star_ratings = models.CharField(max_length=1,default='0',choices=STAR_RATING)
+    testimonial = models.BooleanField(default=False)
     def __str__(self) -> str:
         return str(self.user)

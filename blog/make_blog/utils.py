@@ -6,6 +6,7 @@ from django.http.response import HttpResponse
 from django.shortcuts import redirect
 from django.utils import timezone
 from math import ceil
+from .models import UserModel
 
 regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 
@@ -93,3 +94,11 @@ def urlify(s : str) -> str:
     s = re.sub(r"\s+", '-', s)
 
     return s
+
+def getTestimonial():
+    userModels = UserModel.objects.exclude(star_ratings__lte=2).filter(testimonial=True)
+    userModels = userModels.order_by('-star_ratings')[:4]
+    userModels.starRange = range(5)
+    for item in userModels:
+        item.star_ratings = int(item.star_ratings)
+    return userModels

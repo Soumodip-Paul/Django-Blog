@@ -1,6 +1,6 @@
 <em>Dear {{user.get_full_name}},
 </em>
 <br>
-Your Password for account having <u><strong>username = {uname}</strong></u> has been changed on 
+Your Password for account having <u><strong>username = {{user.username}}</strong></u> has been changed on 
 {{ date|date:"D d M Y" }} {{ date|time:"H:i" }}
 successfully

@@ -1,7 +1,8 @@
-from django import template
 from django.contrib import admin
 from django.http.request import HttpRequest
-from .models import Comment, ContactClass,BlogCategory,Blog, Pricing, TransctionDetail,UserModel,Images, PaymentDetail
+from import_export.admin import ImportExportMixin
+from .models import *
+from .resources import BlogAdminResource
 from .utils import urlify
 
 # Register your models here.
@@ -22,14 +23,15 @@ def withdrawContent(modeladmin, request: HttpRequest, queryset):
     queryset.update(blog_status='w')
 
 @admin.register(BlogCategory)
-class BlogCategoryAdmin(admin.ModelAdmin):
+class BlogCategoryAdmin(ImportExportMixin,admin.ModelAdmin):
     list_display = ["id","category_name","category_url","date"]
     list_display_links = ["id",]
     search_fields = ["id","category_name","category_url","date"]
     list_editable = ["category_name","category_url",]
 
 @admin.register(Blog)
-class BlogAdmin(admin.ModelAdmin):
+class BlogAdmin(ImportExportMixin,admin.ModelAdmin):
+    resource_class  =   BlogAdminResource
     list_display = ["blog_id","blog_title", "blog_status","blog_category","blog_date"]
     list_display_links = ["blog_id","blog_title",]
     search_fields = ["blog_id","blog_title", "blog_status","blog_category","blog_date"]
@@ -51,12 +53,11 @@ class BlogAdmin(admin.ModelAdmin):
             if len(isAvailable) != 0 :
                 obj.blog_url = obj.blog_url + "-" + str(Blog.objects.count() + 1)
         super().save_model(request, obj, form, change)
-    class Media: 
-        # css = ["css/blog_style.css"]
+    class Media:
         js = ["js/prism.js","js/tinymce.js"]
         css = {
         'all': ("css/blog_style.css",)
-         }
+        }
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
@@ -78,13 +79,24 @@ class ContactModel(admin.ModelAdmin):
     def has_add_permission(self, request: HttpRequest) -> bool:
         return False
 
+@admin.register(Feature)
+class FeatureAdmin(admin.ModelAdmin):
+    list_display = ['id','feature_name','timestamp']
+    list_display_links = ["id",]
+    search_fields = ["feature_name","feature_image", "feature_details","timestamp",]
+    list_editable = ["feature_name"]
+    class Media:
+        js = ["js/prism.js","js/tinymce.js"]
+        css = {
+        'all': ("css/blog_style.css",)
+        }
 @admin.register(Images)
 class ImageAdmin(admin.ModelAdmin):
     list_display = ['image_id', 'image','timestamp']
     search_fields = ['image_id', 'image','timestamp']
 
 @admin.register(PaymentDetail)
-class PaymentDetailsAdmin(admin.ModelAdmin):
+class PaymentDetailsAdmin(ImportExportMixin,admin.ModelAdmin):
     list_display = ['id', 'ORDERID' , 'TXNAMOUNT', 'TXNDATE']
     list_display_links = ['id','ORDERID']
     list_filter = 'STATUS',
@@ -110,7 +122,7 @@ class PriceAdmin(admin.ModelAdmin):
         return request.user.is_superuser
 
 @admin.register(TransctionDetail)
-class TransactionAdmin(admin.ModelAdmin):
+class TransactionAdmin(ImportExportMixin,admin.ModelAdmin):
     list_display = ['order_id','user','amount','timestamp']
     search_fields= ['order_id','user','timestamp','status']
     list_filter = ['status']

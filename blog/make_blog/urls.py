@@ -12,6 +12,7 @@ urlpatterns = [
     path('contact/', contact,name='blogcontact'),
     path('email-reset-password', sendPasswordResetLink,name='resetPasswordsendLink'),
     path('features/', features,name='blogfeatures'),
+    path('features/<str:page>', featuresPage,name='blogfeaturesPage'),
     path('favicon.ico', favicon,name='favicon'),
     path('login', loginUser,name='blogLogin'),
     path('logout', logoutUser,name='blogLogout'),

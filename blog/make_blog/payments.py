@@ -11,7 +11,7 @@ from paytmchecksum import PaytmChecksum
 from paytmpg import LibraryConstants,MerchantProperty,UserInfo,Money,EChannelId,EnumCurrency,PaymentDetailsBuilder,Payment
 from random import random
 from .models import PaymentDetail, Pricing, TransctionDetail,UserModel
-from .utils import InternalServerError
+from .utils import InternalServerError, getTestimonial
 from blog.secret import site_name
 import logging
 
@@ -101,7 +101,7 @@ def startPayment(req: HttpRequest) :
                     price.most_popular = True
                 else: 
                     price.most_popular = False
-            return render(req, 'pricing.html', {'success': False, 'prices' : prices[:3] })
+            return render(req, 'pricing.html', {'success': False, 'prices' : prices[:3], 'table': prices, 'testimonial': getTestimonial()  })
         except Exception as e: 
             return InternalServerError(e)
     elif req.method == "POST" and not req.user.is_authenticated:

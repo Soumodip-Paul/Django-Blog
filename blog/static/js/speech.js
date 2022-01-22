@@ -23,6 +23,6 @@ function recogniseText() {
         recognition.start();
     }
     else {
-        showAlert('You are OffLine', "Turn on internet to use voice search")
+        showAlert('You are Offline', "Turn on internet to use voice search")
     }
 }

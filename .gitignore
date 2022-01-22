@@ -10,3 +10,5 @@ __pycache__
 secret.py
 # todo list
 todo.*
+# log files
+*.log

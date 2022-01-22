@@ -8,7 +8,7 @@ script.onload = () => {
 var useDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
 tinymce.init({
-  selector: '#id_blog_content',
+  selector: 'textarea',
   plugins: 'print preview paste importcss searchreplace autolink autosave save directionality code visualblocks visualchars fullscreen image link media template codesample table charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists wordcount imagetools textpattern noneditable help charmap quickbars emoticons',
   images_upload_url: '/upload-image',
   imagetools_cors_hosts: ['picsum.photos'],

@@ -1,7 +1,3 @@
-try :
-    from blog.secret import ResultPerPage
-except ImportError as e:
-    ResultPerPage = 6
 from bs4 import BeautifulSoup
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
@@ -16,12 +12,25 @@ from django.views.decorators.csrf import csrf_exempt
 from blog.settings import BASE_DIR
 from uuid import *
 from .mail import mail, mailEmailResetSuccessfully, mailResetPasswordSuccessfully, sendEmailResetEmail, sendPasswordResetEmail,sendVerificationEmail,password_token,email_token
-from .models import Blog, BlogCategory, Comment, ContactClass, Images, UserModel
+from .models import Blog, BlogCategory, Comment, ContactClass, Images, UserModel, Feature
 from .utils import *
+try :
+    from blog.secret import ResultPerPage
+except ImportError as e:
+    ResultPerPage = 6
 
 def index(req: HttpRequest):
     """Landing Page of website"""
-    return render(req,'index.html')
+    try:
+        featurePages = Feature.objects.all().order_by('-timestamp')[:2]
+        for featurePage in featurePages:
+            featurePage.feature_details = BeautifulSoup(featurePage.feature_details, 'html.parser').get_text()
+    except Feature.DoesNotExist as e:
+        featurePages = None
+    except Exception as e:
+        featurePages = None
+        return InternalServerError(e)
+    return render(req,'index.html',{'testimonial': getTestimonial(), 'features': featurePages })
 
 def activate(req: HttpRequest, id:str, token):
     logout(req)
@@ -118,10 +127,27 @@ def contact(req: HttpRequest):
         contactDetails = ContactClass(query_desc=credentials.get('message'),customer_name=credentials.get('name'),customer_email=credentials.get('email'),query_subject=credentials.get('subject'), date = timezone.now())
         contactDetails.save()
         return HttpResponse('OK')
-    return render(req,'contact.html')
+    return render(req,'contact.html', {'testimonial': getTestimonial() })
 
 def features(req: HttpRequest):
-    return render(req,'features.html')
+    try:
+        featurePages = Feature.objects.all()
+        for featurePage in featurePages:
+            featurePage.feature_details = BeautifulSoup(featurePage.feature_details, 'html.parser').get_text()
+        return render(req,'features.html',{'testimonial': getTestimonial(), 'features': featurePages })
+    except Feature.DoesNotExist as e:
+        return HttpResponseBadRequest('No feature pages')
+    except Exception as e:
+        return InternalServerError(e)
+
+def featuresPage(req: HttpRequest, page: str):
+    try:
+        page : Feature = Feature.objects.get(feature_name = page)
+        return render(req,'feature_page.html', {'testimonial': getTestimonial(),'page':page})
+    except Feature.DoesNotExist as e:
+        return Http404()
+    except Exception as e:
+        return InternalServerError(e)
 
 def favicon(req: HttpRequest):
     file_location = BASE_DIR / 'static/img/favicon.ico'
@@ -379,7 +405,7 @@ def signUp(req :HttpRequest):
             return HttpResponseBadRequest(e)
         except Exception as e:
             return InternalServerError(e)
-    return render(req,'signup.html') if not req.user.is_authenticated else redirect('blogindex')
+    return render(req,'signup.html', {'testimonial': getTestimonial() }) if not req.user.is_authenticated else redirect('blogindex')
 
 @csrf_exempt
 def uploadImage(request: HttpRequest):
@@ -406,7 +432,7 @@ def userProfile(req: HttpRequest):
             userModel: UserModel = UserModel.objects.get(user=req.user)
             userImage = userModel.avatar_image if str(userModel.avatar_image) != '' else None
             userAbout = userModel.about or ''
-        return render(req,'profile.html',{'userImage': userImage, 'userAbout': userAbout}) if req.user.is_authenticated else redirect('blogLogin')
+        return render(req,'profile.html',{'userImage': userImage, 'userAbout': userAbout, 'testimonial': getTestimonial() }) if req.user.is_authenticated else redirect('blogLogin')
     elif req.method == "POST" and req.user.is_authenticated:
         try:
             user: User = User.objects.get(username=req.user.username)
@@ -442,7 +468,7 @@ def userRating(req: HttpRequest):
         try:
             userModel : UserModel = UserModel.objects.get(user=req.user)
             userModel.star_ratings = req.POST['rate']
-            userModel.rating_title = req.POST['title']
+            userModel.rating_title = req.POST.get('title') or ''
             userModel.ratings = req.POST.get('description') or ''
             userModel.save()
             return redirect('/')
@@ -455,7 +481,7 @@ def userRating(req: HttpRequest):
     elif req.method == 'GET' and req.user.is_authenticated :
         try:
             userModel : UserModel = UserModel.objects.get(user=req.user)
-            return render(req, 'rating.html', { 'rating' : userModel.star_ratings, 'description' : userModel.ratings, "range" : range(5) })
+            return render(req, 'rating.html', { 'rating' : userModel.star_ratings,'rating_title': userModel.rating_title, 'description' : userModel.ratings, "range" : range(5), 'testimonial': getTestimonial()  })
         except UserModel.DoesNotExist as e :
             return HttpResponseNotFound()
         except Exception as e:
