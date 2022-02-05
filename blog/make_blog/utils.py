@@ -1,12 +1,13 @@
-import re
+import re, requests
 from bs4 import BeautifulSoup
 from datetime import datetime
+from django.contrib import messages
 from django.http.request import HttpRequest
-from django.http.response import HttpResponse
-from django.shortcuts import redirect
+from django.http.response import HttpResponse,Http404
+from django.shortcuts import redirect, render as Render
 from django.utils import timezone
 from math import ceil
-from .models import UserModel
+from .models import UserModel, YoutubeCoursePlayList, YoutubeVideo
 
 regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 
@@ -95,6 +96,22 @@ def urlify(s : str) -> str:
 
     return s
 
+def render(req:HttpRequest, template_name:str, context =None):
+    from .config import config as CONFIG
+    item_dict = {'testimonial' : getTestimonial(), 'config': CONFIG}
+    if context is not None:
+        for item in context:
+            item_dict[item] = context[item]
+    return Render(req,template_name,item_dict)
+
+def renderPage(req:HttpRequest, name:str, pages) -> HttpResponse:
+    from .config import config as CONFIG     
+    if pages != None and len(pages) != 0 :
+        page = pages[0]
+        page.page = page.page.format(site_domain=CONFIG.site_domain,site_name=CONFIG.site_name,contact_email=CONFIG.contact_email)
+        return render(req, 'page.html', { 'pageName' : name, 'page' : page, 'desc': BeautifulSoup(page.page,'html.parser').get_text()})
+    else : raise Http404()
+
 def getTestimonial():
     userModels = UserModel.objects.exclude(star_ratings__lte=2).filter(testimonial=True)
     userModels = userModels.order_by('-star_ratings')[:4]
@@ -102,3 +119,60 @@ def getTestimonial():
     for item in userModels:
         item.star_ratings = int(item.star_ratings)
     return userModels
+
+def getPlayListdata(obj : YoutubeCoursePlayList, req: HttpRequest = None):
+    from .config import config as CONFIG
+    if (CONFIG.youtube_api_key == None or len(CONFIG.youtube_api_key) == 0): 
+        if (req != None) : messages.warning(req, 'No Api Key')
+        return
+    playlist_id = obj.playlist_id
+    response = requests.get(url="https://youtube.googleapis.com/youtube/v3/playlists?part=snippet&id={list_id}&key={api_key}".format(list_id=playlist_id,api_key=CONFIG.youtube_api_key))
+    response2 = requests.get(url="https://youtube.googleapis.com/youtube/v3/playlistItems?part=contentDetails&part=id&part=snippet&part=status&maxResults=50&playlistId={id}&key={api_key}".format(id=playlist_id,api_key=CONFIG.youtube_api_key))
+    if response.status_code != 200 or response2.status_code != 200 : 
+        if (req != None) : messages.warning(req, 'Forbidden')
+        return 
+    data = response.json()['items'][0]
+    data2 = response2.json()['items']
+    obj_data = data['snippet']
+    obj.course_title = obj_data['title']
+    obj.course_description = obj_data['description']
+    obj.video_thumbnail_default = obj_data['thumbnails']['default']['url']
+    obj.video_thumbnail_medium = obj_data['thumbnails']['medium']['url']
+    obj.video_thumbnail_high = obj_data['thumbnails']['high']['url']
+    obj.video_thumbnail_standard = obj_data['thumbnails']['standard']['url']
+    obj.save()
+    for item in data2:
+        snippet = item['snippet']
+        object = YoutubeVideo.objects.get_or_create(video_id=snippet['resourceId']['videoId'])
+        video : YoutubeVideo = object[0]
+        print(snippet,video,)
+        # video.video_id = snippet['resourceId']['videoId']
+        video.video_title = snippet['title']
+        video.video_description = snippet['description'] 
+        video.video_thumbnail_default = snippet['thumbnails']['default']['url']
+        video.video_thumbnail_high = snippet['thumbnails']['high']['url']
+        video.video_thumbnail_medium = snippet['thumbnails']['medium']['url']
+        video.video_thumbnail_standard = snippet['thumbnails']['standard']['url']
+        video.save()
+        obj.videos.add(video)
+    obj.save()
+
+def getYoutubeVideoData(obj : YoutubeVideo, req: HttpRequest = None):
+    from .config import config as CONFIG
+    if (CONFIG.youtube_api_key == None or len(CONFIG.youtube_api_key) == 0): 
+        if (req != None) : messages.warning(req, 'No Api Key')
+        return
+    video_id = obj.video_id
+    response = requests.get(url="https://youtube.googleapis.com/youtube/v3/videos?part=snippet&id={id}&key={api_key}".format(id=video_id,api_key=CONFIG.youtube_api_key))
+    if response.status_code != 200 : 
+        if (req != None) : messages.warning(req, 'Forbidden')
+        return 
+    obj_data = response.json()['items'][0]['snippet']
+    obj.video_title = obj_data['title']
+    obj.video_description = obj_data['description']
+    obj.video_thumbnail_default = obj_data['thumbnails']['default']['url']
+    obj.video_thumbnail_medium = obj_data['thumbnails']['medium']['url']
+    obj.video_thumbnail_high = obj_data['thumbnails']['high']['url']
+    obj.video_thumbnail_standard = obj_data['thumbnails']['standard']['url']
+    obj.save()
+    return

@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils.timezone import now
+try: from blog.secret import site_name as siteName, smtp_mail as contactEmail
+except ImportError : siteName = 'localhost'; contactEmail = 'examle@localhost'
 import uuid
 
 BLOG_CHOICES = [
@@ -62,9 +64,11 @@ class Blog(models.Model):
     blog_title = models.CharField(default="",max_length=512)
     blog_url = models.SlugField(default="",max_length=512,unique=True,blank=True, help_text="Leave blank if you donot want custom url")
     blog_image = models.ImageField(upload_to="blog/image/%Y/%m/%d", default="", null=True,blank=True)
+    blog_premium = models.BooleanField(default=False,help_text="Mark your blog as premium or not")
     blog_status = models.CharField(default='d',max_length=1,choices=BLOG_CHOICES)
-    blog_category = models.ForeignKey(BlogCategory,on_delete=models.SET_NULL,null=True)
-    blog_author = models.ForeignKey(User,on_delete=models.SET_NULL,null=True,editable=False)
+    # blog_category = models.ForeignKey(BlogCategory,on_delete=models.SET_NULL,null=True)
+    blog_category = models.ManyToManyField(BlogCategory)
+    blog_author = models.ForeignKey(User,on_delete=models.SET_NULL,null=True,)
     blog_date = models.DateTimeField()
     blog_content = models.TextField()
 
@@ -82,7 +86,7 @@ class Feature(models.Model):
     def __str__(self) -> str:
         return self.feature_name
 
-class Images(models.Model):
+class Image(models.Model):
     """ Model to manage images """
     image_id = models.AutoField(primary_key=True)
     image = models.ImageField(default='',upload_to='blog/image/%Y/%m/%d')
@@ -136,6 +140,12 @@ class Pricing(models.Model):
     def __str__(self) -> str:
         return self.plan_name
 
+class PrivacyPolicy(models.Model):
+    page = models.TextField(default='')
+    timestamp = models.DateTimeField(default=now)
+    def __str__(self) -> str:
+        return str(self.id)
+
 class TransctionDetail(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     amount = models.PositiveIntegerField(default=0)
@@ -149,16 +159,78 @@ class TransctionDetail(models.Model):
     def __str__(self) -> str:
         return self.order_id
 
+class TermsAndCondition(models.Model):
+    page = models.TextField(default='')
+    timestamp = models.DateTimeField(default=now)
+    def __str__(self) -> str:
+        return str(self.id)
+
 class UserModel(models.Model):
     """ Extended User Model to store user data other than default Django User Model Fields"""
     id = models.UUIDField(primary_key = True,default = uuid.uuid4,editable = False)
     user = models.OneToOneField(User,on_delete=models.CASCADE)
     avatar_image = models.ImageField(upload_to="user/images/%Y/%m/%d",default="",null=True,blank=True)
     about = models.TextField(null=True,blank=True)
-    membership = models.ForeignKey(Pricing,on_delete=models.SET_NULL,null=True,blank=True)
+    membership = models.ForeignKey(Pricing,on_delete=models.SET_NULL,null=True,blank=True,default=1)
     ratings = models.TextField(null=True,blank=True)
     rating_title = models.CharField(max_length=255,null=True,blank=True)
     star_ratings = models.CharField(max_length=1,default='0',choices=STAR_RATING)
     testimonial = models.BooleanField(default=False)
     def __str__(self) -> str:
         return str(self.user)
+
+class YoutubeVideo(models.Model):
+    video_id = models.CharField(default='qqee',max_length=255,primary_key=True)
+    video_title = models.TextField(default='')
+    video_description = models.TextField(default='')
+    video_thumbnail_default = models.CharField(default='',max_length=255)
+    video_thumbnail_medium = models.CharField(default='',max_length=255)
+    video_thumbnail_high = models.CharField(default='',max_length=255)
+    video_thumbnail_standard = models.CharField(default='',max_length=255)
+    def __str__(self) -> str:
+        return self.video_id
+
+class YoutubeCoursePlayList(models.Model):
+    playlist_id = models.CharField(default='',max_length=255, primary_key=True)
+    course_title = models.TextField(default='')
+    course_description = models.TextField(default='')
+    course_author = models.ForeignKey(User,on_delete=models.SET_NULL,null=True,blank=True)
+    video_thumbnail_default = models.CharField(default='',max_length=255)
+    video_thumbnail_medium = models.CharField(default='',max_length=255)
+    video_thumbnail_high = models.CharField(default='',max_length=255)
+    video_thumbnail_standard = models.CharField(default='',max_length=255)
+    videos = models.ManyToManyField(YoutubeVideo)
+    timestamp = models.DateTimeField(default=now)
+    def __str__(self) -> str:
+        return self.course_title
+
+class Singleton(models.Model):
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super(Singleton, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+class Configuration(Singleton):
+    name = "Django Configurations"
+    site_name = models.CharField(default='Cool Developer',max_length=255,help_text='SITE NAME')
+    site_domain = models.CharField(default=siteName,max_length=255,help_text='SITE DOMAIN NAME')
+    contact_email = models.EmailField(default=contactEmail, help_text='CONTACT EMAIL ADDRESS')
+    result_per_page = models.IntegerField(default=9, help_text='Configure how many query result you want to show in each page ')
+    youtube_api_key = models.CharField(null=True,blank=True,max_length=255,help_text="Your Youtube API key")
+    instagram = models.CharField(null=True,blank=True,max_length=255,help_text="Your Instagram username")
+    github = models.CharField(null=True,blank=True,max_length=255,help_text="Your Github username")
+    linkedIn = models.CharField(null=True,blank=True,max_length=255,help_text="Your LinkedIn username")
+    twitter = models.CharField(null=True,blank=True,max_length=255,help_text="Your Twitter username")
+    youtube = models.CharField(null=True,blank=True,max_length=255,help_text="Your Youtube ChannelId")
+    def __str__(self) -> str:
+        return self.name

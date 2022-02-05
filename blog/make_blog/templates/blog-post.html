@@ -47,8 +47,14 @@
 					<p class="lead mb-5">{{blog_desc|truncatewords:20}}</p>
 					{{blog.blog_content|safe}}
 					<div class="pt-5">
-						<p>Category: <a
-								href="/category/{{blog.blog_category.category_url}}">{{blog.blog_category.category_name}}</a>
+						<p>
+							{% for category in blog.blog_category.all %}
+							{% if forloop.counter == 1 %}Category:&nbsp;{% endif %}
+							<a href="/category/{{category.category_url}}">
+								{{category.category_name|capfirst}}
+								{% if not forloop.last %},{% else %}&nbsp;{% endif %}
+							</a>
+							{% endfor %}
 							Tags: <a href="#">#html</a>, <a href="#">#trends</a></p>
 					</div>
 					<div class="pt-5">

@@ -107,7 +107,7 @@ Welcome to django blog
                                 <input type="hidden" name="removeImage" id="removeImage" value="false" >
                                 <label for="file"
                                     class="border border-primary border-1 position-relative rounded-circle mx-auto">
-                                    <img src="{% if userImage != None %}/media/{{ userImage}}{% else %}/assets/img/undraw_svg_4.svg{% endif %}" width="256" height="256" alt="User Image"
+                                    <img src="{% if userImage != None %}/media/{{ userImage}}{% else %}/assets/img/user.svg{% endif %}" width="256" height="256" alt="User Image"
                                         id="upload_image">
                                     <button type="button" class="btn btn-sm btn-primary rounded-circle reset-btn"
                                         onclick="clearInput()">Reset</button>
@@ -222,17 +222,17 @@ Welcome to django blog
         document.querySelector('#form_submit').disabled = true
         document.getElementById("file").value = ''
         document.querySelector('#removeImage').value = false
-        document.getElementById("upload_image").setAttribute('src', "{% if userImage != None and userImage != '' %}/media/{{ userImage}}{% else %}/assets/img/undraw_svg_4.svg{% endif %}")
+        document.getElementById("upload_image").setAttribute('src', "{% if userImage != None and userImage != '' %}/media/{{ userImage}}{% else %}/assets/img/user.svg{% endif %}")
     }
     function clearForm(e){
         document.querySelector('#form_submit').disabled = true
         document.querySelector('#form_reset').disabled = true
         document.querySelector('#removeImage').value = false
-        document.getElementById("upload_image").setAttribute('src', "{% if userImage != None %}/media/{{ userImage}}{% else %}/assets/img/undraw_svg_4.svg{% endif %}")
+        document.getElementById("upload_image").setAttribute('src', "{% if userImage != None %}/media/{{ userImage}}{% else %}/assets/img/user.svg{% endif %}")
     }
     function clearImage(){
-        document.querySelector('#removeImage').value = true
-        document.getElementById("upload_image").setAttribute('src', "/assets/img/undraw_svg_4.svg")
+        document.querySelector('input#removeImage').value = true
+        document.getElementById("upload_image").setAttribute('src', "/assets/img/user.svg")
         document.querySelector('#form_submit').disabled = false
         document.querySelector('#form_reset').disabled = false
     }

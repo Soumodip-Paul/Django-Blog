@@ -100,17 +100,17 @@
 						Node JS , Mongo DB, SQLite Database and Android Development for absolutely free.
 					</p>
 					<p class="social">
-						<a target="_blank" rel="noopener noreferrer" href="https://twitter.com/soumodippaul6"><span
-								class="bi bi-twitter"></span><span class="visually-hidden">go to</span></a>
-						<a target="_blank" rel="noopener noreferrer" href="https://github.com/Soumodip-Paul"><span
-								class="bi bi-github"></span><span class="visually-hidden">go to</span></a>
-						<a target="_blank" rel="noopener noreferrer"
-							href="https://youtube.com/channel/UCOFwfN-LJ7wGvAOovAwpjxg?sub_confirmation=1"><span
-								class="bi bi-youtube"></span><span class="visually-hidden">go to</span></a>
-						<a target="_blank" rel="noopener noreferrer" href="https://instagram.com/soumodippaul64"><span
-								class="bi bi-instagram"></span><span class="visually-hidden">go to</span></a>
-						<a target="_blank" rel="noopener noreferrer" href="#"><span class="bi bi-linkedin"></span><span
-								class="visually-hidden">go to</span></a>
+						{% if config.twitter|length > 0 %}<a target="_blank" rel="noopener noreferrer" href="https://twitter.com/{{config.twitter}}"><span
+								class="bi bi-twitter"></span><span class="visually-hidden">go to</span></a>{% endif %}
+						{% if config.github|length > 0 %}<a target="_blank" rel="noopener noreferrer" href="https://github.com/{{config.github}}"><span
+								class="bi bi-github"></span><span class="visually-hidden">go to</span></a>{% endif %}
+						{% if config.youtube|length > 0 %}<a target="_blank" rel="noopener noreferrer"
+							href="https://youtube.com/channel/{{config.youtube}}?sub_confirmation=1"><span
+								class="bi bi-youtube"></span><span class="visually-hidden">go to</span></a>{% endif %}
+						{% if config.instagram|length > 0 %}<a target="_blank" rel="noopener noreferrer" href="https://instagram.com/{{instagram}}"><span
+								class="bi bi-instagram"></span><span class="visually-hidden">go to</span></a>{% endif %}
+						{% if config.linkedIn|length > 0 %}<a target="_blank" rel="noopener noreferrer" href="https://www.linkedin.com/in/{{config.linkedIn}}"><span class="bi bi-linkedin"></span><span
+								class="visually-hidden">go to</span></a>{% endif %}
 					</p>
 				</div>
 				<div class="col-md-7 ms-auto">
@@ -125,12 +125,12 @@
 							</ul>
 						</div>
 						<div class="col-md-4 mb-4 mb-md-0">
-							<h3>Services</h3>
+							<h3>Policies</h3>
 							<ul class="list-unstyled">
 								<li><a href="#">Team</a></li>
-								<li><a href="#">Collaboration</a></li>
-								<li><a href="#">Todos</a></li>
-								<li><a href="#">Events</a></li>
+								<li><a href="/privacy">Privacy Policy</a></li>
+								<li><a href="/terms-and-condition">Terms and Conditions</a></li>
+								<!-- <li><a href="#">Events</a></li> -->
 							</ul>
 						</div>
 						<div class="col-md-4 mb-4 mb-md-0">
@@ -205,6 +205,16 @@
 		  </div>
 		</div>
 	  </div>
+	  {% if messages %}
+	  <div class="d-flex " style="position: absolute; bottom: 5%; width: 35%; left: 2%; flex-direction: column; z-index: 9999;" >
+	  {% for message in messages %}
+	  <div class="alert alert-{{message.tags}} alert-dismissible fade show w-100 my-2" role="alert">
+		{{message}}
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	  </div>
+	  {% endfor %}
+	</div>
+	{% endif %}
 	<!-- Vendor JS Files -->
 	<script src="/assets/vendor/aos/aos.js"></script>
 	<script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
