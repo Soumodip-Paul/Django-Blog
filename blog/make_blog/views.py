@@ -1,3 +1,5 @@
+from audioop import add
+from blog.settings import BASE_DIR
 from bs4 import BeautifulSoup
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
@@ -9,10 +11,9 @@ from django.shortcuts import redirect
 from django.utils import timezone
 from django.utils.datastructures import MultiValueDictKeyError
 from django.views.decorators.csrf import csrf_exempt
-from blog.settings import BASE_DIR
 from uuid import *
-from .mail import mail, mailEmailResetSuccessfully, mailResetPasswordSuccessfully, sendEmailResetEmail, sendPasswordResetEmail,sendVerificationEmail,password_token,email_token
-from .models import Blog, BlogCategory, Comment, ContactClass, Image, PrivacyPolicy, TermsAndCondition, UserModel, Feature
+from .mail import *
+from .models import *
 from .utils import *
 
 def index(req: HttpRequest):
@@ -54,10 +55,9 @@ def activate(req: HttpRequest, id:str, token):
         return InternalServerError(e)
 
 def blog(req: HttpRequest):
-    from .config import config as CONFIG
     """Endpoint to show blog list"""
     posted_blogs = Blog.objects.filter(blog_status='p').order_by('-blog_date')
-    resultPage: Pages = paginateResults(req,posted_blogs,CONFIG.result_per_page,'blogvalue')
+    resultPage: Pages = paginateResults(req,posted_blogs,'blogvalue')
     blogs = []
     for blog in resultPage.listItem:
         blogs.append(blog)
@@ -110,11 +110,10 @@ def blog_single(req: HttpRequest):
     return render(req,'blog-single.html')
 
 def category(req: HttpRequest,id):
-    from .config import config as CONFIG
     """Endpoint to list blogs according to their category"""
     posted_blogs = Blog.objects.filter(blog_category__category_url=id,blog_status='p').order_by('-blog_date')
     blogs = []
-    results: Pages = paginateResults(req,posted_blogs,CONFIG.result_per_page,'blogcategoryvalue')
+    results: Pages = paginateResults(req,posted_blogs,'blogcategoryvalue')
     for blog in results.listItem :
         blogs.append(blog)
     blogs = prettyFilter(blogs)
@@ -130,15 +129,17 @@ def contact(req: HttpRequest):
     return render(req,'contact.html')
 
 def courses(req: HttpRequest):
-    from .config import config as CONFIG
     """Endpoint to show blog list"""
     posted_courses = YoutubeCoursePlayList.objects.all().order_by('-timestamp')
-    resultPage: Pages = paginateResults(req,posted_courses,CONFIG.result_per_page,'blogcourses')
+    resultPage: Pages = paginateResults(req,posted_courses,'blogcourses')
     courses = []
     for course in resultPage.listItem:
         course.timestamp = pretty_date(course.timestamp)
         courses.append(course)
     return render(req,'youtube_courses.html', {'courses': courses, 'pages': range(resultPage.pages), 'p': resultPage.p})
+
+def coursesData(req: HttpRequest, id: str): 
+    return HttpResponse(id)
 
 def features(req: HttpRequest):
     try:
@@ -337,7 +338,6 @@ def resetEmailLink(req:HttpRequest, uid:str,email:str, token:str):
 
 def search(req: HttpRequest):
     """Endpoint to paginate user"""
-    from .config import config as CONFIG
     qString = req.GET.get('q')
     results = []
     if qString != None and len(qString) != 0:
@@ -347,7 +347,7 @@ def search(req: HttpRequest):
         results.extend([item for item in result if item not in results])
         result = Blog.objects.filter(blog_author__username__icontains=qString).order_by('-blog_date')
         results.extend([item for item in result if item not in results])
-        results : Pages = paginateResults(req,results or [],CONFIG.result_per_page,'blogsearch')
+        results : Pages = paginateResults(req,results or [],'blogsearch')
         return render(req, 'search.html', {'qs': qString or '' , 'blogs': prettyFilter(results.listItem), 'pages':range(results.pages), 'p': results.p })
     return render(req,'search.html',{})
 
@@ -450,6 +450,24 @@ def uploadImage(request: HttpRequest):
         return render(request,'s.html') 
     else:  raise Http404("Page not found")
 
+def userFollow(req: HttpRequest, id: str):
+    if req.method != 'POST': raise Http404()
+    if req.user is None : raise HttpResponseForbidden()
+    if req.user.username == id : return JsonResponse({'following': False})
+    try:
+        usermodel :UserModel = UserModel.objects.get(user__username=id)
+        added = True
+        try: 
+            usermodel.followers.get(username=req.user.username)
+            usermodel.followers.remove(req.user)
+            added = False
+        except User.DoesNotExist as e:
+            usermodel.followers.add(req.user)
+        usermodel.save()
+        return JsonResponse({'following': added})
+    except UserModel.DoesNotExist as  e:
+        return InternalServerError(e)
+
 def userProfile(req: HttpRequest):
     """endpoint to update user profile"""
     if req.method == "GET":
@@ -490,6 +508,26 @@ def userProfile(req: HttpRequest):
             return InternalServerError(e)
     else: return HttpResponseForbidden("Forbidden")
 
+def userProfileId(req: HttpRequest, id: str):
+    try :
+        userModel : UserModel = UserModel.objects.get(user__username = id)
+        posted_blogs = Blog.objects.filter(blog_status='p',blog_author=userModel.user).order_by('-blog_date')
+        resultPage: Pages = paginateResults(req,posted_blogs,'blogvalue')
+        blogs = []
+        for blog in resultPage.listItem:
+            blogs.append(blog)
+        blogs = prettyFilter(blogs)
+        try :
+            userModel.followers.get(username=req.user.username)
+            following = True
+        except User.DoesNotExist as e:
+            following = False
+        except Exception as e: 
+            return InternalServerError(e)
+        return render(req,'userprofile.html',{ 'userModel' : userModel, 'blogs' : blogs, 'pages': range(resultPage.pages), 'p': resultPage.p, 'following' : following, 'id': id })
+    except UserModel.DoesNotExist as e:
+        raise Http404("Page not found")
+        
 def userRating(req: HttpRequest):
     if req.method == 'POST' and req.user.is_authenticated :
         try:

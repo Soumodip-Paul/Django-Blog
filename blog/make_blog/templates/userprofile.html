@@ -1,0 +1,249 @@
+{% extends 'temp.html' %}
+{% block desc %}
+{% endblock %}
+{% block title %}
+Welcome to django blog
+{% endblock %}
+{% block blog_profile %}active{% endblock %}
+{% block style %}
+<style>
+    body {
+        color: black !important;
+    }
+
+    .file {
+        opacity: 0;
+        width: 0.1px;
+        height: 0.1px;
+        position: absolute;
+    }
+
+    li label {
+        cursor: pointer;
+        overflow: hidden;
+    }
+
+    li label img {
+        transition: transform .2s ease-out;
+    }
+
+    li label img:hover {
+        transform: scale(1.05);
+    }
+
+    .file-name {
+        display: none;
+        position: absolute;
+        bottom: -35px;
+        left: 10px;
+        font-size: 0.85rem;
+        color: #555;
+    }
+
+    .reset-btn {
+        position: absolute;
+        bottom: -1rem;
+        left: 0;
+        right: 0;
+        margin-left: auto;
+        margin-right: auto;
+        width: 125px;
+    }
+    .active {
+        font-weight: bolder;
+        font-size: larger;
+    }
+</style>
+{% endblock %}
+{% block main %}
+
+<main id="main">
+    <section class="hero-section inner-page">
+        <div class="wave">
+            <svg width="1920px" height="265px" viewBox="0 0 1920 265" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink">
+                <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                    <g id="Apple-TV" transform="translate(0.000000, -402.000000)" fill="#FFFFFF">
+                        <path
+                            d="M0,439.134243 C175.04074,464.89273 327.944386,477.771974 458.710937,477.771974 C654.860765,477.771974 870.645295,442.632362 1205.9828,410.192501 C1429.54114,388.565926 1667.54687,411.092417 1920,477.771974 L1920,667 L1017.15166,667 L0,667 L0,439.134243 Z"
+                            id="Path"></path>
+                    </g>
+                </g>
+            </svg>
+        </div>
+
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-12">
+                    <div class="row justify-content-center">
+                        <div class="col-md-7 text-center hero-text">
+                            <h1 data-aos="fade-up" data-aos-delay="">{{userModel.user.first_name|title}}'s Profile</h1>
+                            <p class="mb-5" data-aos="fade-up" data-aos-delay="100">
+                                {{userModel.about|lower|capfirst}}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="section">
+        <div class="email-form">
+            <div class="container">
+                <div class="row mb-5 align-items-end">
+                    <div class="col-md-6" data-aos="fade-up">
+                        <h2>{{userModel.user.get_full_name|title}}</h2>
+                        <p class="mb-0">
+                            
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 me-auto order-1" data-aos="fade-up">
+                        <ul class="list-unstyled">
+                            <li class="mb-3 text-center">
+                                <img src="{% if userImage != None %}/media/{{ userImage}}{% else %}/assets/img/user.svg{% endif %}"
+                                    width="256" height="256" alt="User Image"
+                                    class="border border-primary border-1 rounded-circle" id="upload_image">
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="col-md-6 mb-5 mb-md-0 order-2" data-aos="fade-up">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <div class="form-floating">
+                                    <input type="text" value="{{userModel.user.first_name}}" class="form-control"
+                                        id="firstName" name="firstName" placeholder="First Name" disabled readonly>
+                                    <label for="firstName">First Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 form-group mt-3 mt-md-0">
+                                <div class="form-floating">
+                                    <input type="text" value="{{userModel.user.last_name}}" class="form-control"
+                                        id="lastName" name="lastName" placeholder="Last Name" disabled readonly>
+                                    <label for="lastName">Last Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-12 form-group mt-3">
+                                <div class="form-floating">
+                                    <textarea type="text" class="form-control" id="about" name="about"
+                                        placeholder="about" disabled readonly>{{userModel.about}}</textarea>
+                                    <label for="about">About</label>
+                                </div>
+                            </div>
+                            <div class="col-md-12 form-group mt-3">
+                                <div class="form-floating">
+                                    <input type="text" value="{{userModel.user.username}}" class="form-control"
+                                        id="signup_username" name="username" placeholder="your username" disabled
+                                        readonly>
+                                    <label for="signup_username">Username (Only Alphanumeric)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-12 form-group mt-3">
+                                <div class="form-floating">
+                                    <input type="email" value="{{userModel.user.email}}" class="form-control"
+                                        id="user_email" name="email" placeholder="name@example.com" disabled readonly>
+                                    <label for="user_email">Email address</label>
+                                </div>
+                            </div>
+                            {% if user.username != id and req.user is not None %}
+                            <div class="col-md-6 form-group d-flex mt-3">
+                                <form role="form" method="post" action="/user/{{userModel.user}}/follow" onsubmit="submitForm(event);">
+                                    {% csrf_token %}
+                                    <input type="hidden" value=".">
+                                    <button class="btn btn-primary" type="submit" id="followBtn">{% if following %}Following{% else %} Follow {% endif %}</button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container mt-5">
+			{% if blogs|length != 0 %}
+            <h3 class="mb-4">Blogs By {{userModel.user.get_full_name|title}}</h3>
+			<div class="row mb-5">
+				{% for blog in blogs %}
+				<div class="col-md-4">
+					<div class="post-entry">
+						<a href="/blog/{{blog.blog_url}}" class="d-block mb-4">
+							<img src="{% if blog.blog_image != '' %}/media/{{blog.blog_image}}{% else %}/assets/img/img_1.jpg{% endif %}" alt="Image" class="img-fluid">
+						</a>
+						<div class="post-text">
+							<span class="post-meta">{{blog.blog_date}} &bullet; By <a href="/user/{{blog.blog_author}}">{{blog.blog_author}}</a></span>
+							<h3><a href="/blog/{{blog.blog_url}}">{{blog.blog_title}}</a></h3>
+							<p>{{blog.blog_content|truncatewords:25}}</p>
+							<p><a href="/blog/{{blog.blog_url}}" class="readmore">Read more</a></p>
+						</div>
+					</div>
+				</div>
+				{% if forloop.counter|divisibleby:3 %}
+				</div>
+				<div class="row mb-5">
+				{% endif %}
+				{% endfor %}
+			</div>
+			{% else %}
+			<h4 class="lead mb-5">No blog posts available now</h4>
+			{% endif %}
+			{% for page in pages %}
+			{% if forloop.counter == 1 %}
+			<div class="row">
+				<div class="col-12 text-center">
+				{% endif %}
+					{% if  p == page|add:1 %}
+					<span class="p-3 active text-primary">{{page|add:1}}</span>
+					{% else %}
+					<a href="?p={{page|add:1}}" class="p-3">{{page|add:1}}</a>
+					{% endif %}
+					{% if forloop.last %}
+				</div>
+			</div> 
+			{% endif %}
+			{% endfor %}
+		</div>
+    </section>
+
+    <!-- ======= Testimonial Section ======= -->
+    {% include 'component/testimonial.html' %}
+    <!-- End Testimonials Section -->
+
+    <!-- ======= CTA Section ======= -->
+    {% include 'component/cta.html' %}
+    <!-- End CTA Section -->
+</main>
+
+{% endblock %}
+{% block script %}
+{% if user.username != id and req.user is not None %}
+<script>
+    async function submitForm(e){
+        e.preventDefault()
+        let thisForm = e.target;
+        let action = thisForm.getAttribute('action');
+        const formData = new FormData(thisForm)
+        try {
+            const response = await fetch(action,{
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+
+            if (!response.ok) return alert('Some error occured')
+            const data = await response.json()
+            document.getElementById('followBtn').innerText = data.following ? "Following" : "Follow"
+        }
+        catch (e){
+            console.error(e)
+        }
+    }
+</script>
+{% endif %}
+{% endblock %}

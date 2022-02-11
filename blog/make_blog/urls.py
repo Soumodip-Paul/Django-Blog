@@ -10,7 +10,8 @@ urlpatterns = [
     path('blog-single/', blog_single,name='blog-single'),
     path('category/<str:id>', category,name='blogcategoryvalue'),
     path('contact/', contact,name='blogcontact'),
-    path('course', courses,name='blogcourses'),
+    path('courses/', courses,name='blogcourses'),
+    path('courses/<str:id>', coursesData,name='blogcoursesdata'),
     path('email-reset-password', sendPasswordResetLink,name='resetPasswordsendLink'),
     path('features/', features,name='blogfeatures'),
     path('features/<str:page>', featuresPage,name='blogfeaturesPage'),
@@ -31,4 +32,6 @@ urlpatterns = [
     path('search', search,name='blogsearch'),
     path('terms-and-condition', terms,name='terms_and_condition'),
     path('upload-image', uploadImage,name='upload_image'),
+    path('user/<str:id>',userProfileId,name="userProfileId"),
+    path('user/<str:id>/follow',userFollow,name="userFollow"),
 ]

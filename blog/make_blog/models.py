@@ -168,7 +168,7 @@ class TermsAndCondition(models.Model):
 class UserModel(models.Model):
     """ Extended User Model to store user data other than default Django User Model Fields"""
     id = models.UUIDField(primary_key = True,default = uuid.uuid4,editable = False)
-    user = models.OneToOneField(User,on_delete=models.CASCADE)
+    user = models.OneToOneField(User,on_delete=models.CASCADE,related_name='authUser')
     avatar_image = models.ImageField(upload_to="user/images/%Y/%m/%d",default="",null=True,blank=True)
     about = models.TextField(null=True,blank=True)
     membership = models.ForeignKey(Pricing,on_delete=models.SET_NULL,null=True,blank=True,default=1)
@@ -176,6 +176,7 @@ class UserModel(models.Model):
     rating_title = models.CharField(max_length=255,null=True,blank=True)
     star_ratings = models.CharField(max_length=1,default='0',choices=STAR_RATING)
     testimonial = models.BooleanField(default=False)
+    followers = models.ManyToManyField(User,related_name="Follower")
     def __str__(self) -> str:
         return str(self.user)
 
@@ -187,6 +188,7 @@ class YoutubeVideo(models.Model):
     video_thumbnail_medium = models.CharField(default='',max_length=255)
     video_thumbnail_high = models.CharField(default='',max_length=255)
     video_thumbnail_standard = models.CharField(default='',max_length=255)
+    timestamp = models.DateTimeField(default=now)
     def __str__(self) -> str:
         return self.video_id
 
@@ -195,10 +197,10 @@ class YoutubeCoursePlayList(models.Model):
     course_title = models.TextField(default='')
     course_description = models.TextField(default='')
     course_author = models.ForeignKey(User,on_delete=models.SET_NULL,null=True,blank=True)
-    video_thumbnail_default = models.CharField(default='',max_length=255)
-    video_thumbnail_medium = models.CharField(default='',max_length=255)
-    video_thumbnail_high = models.CharField(default='',max_length=255)
-    video_thumbnail_standard = models.CharField(default='',max_length=255)
+    video_thumbnail_default = models.CharField(default='',max_length=255, null=True, blank=True)
+    video_thumbnail_medium = models.CharField(default='',max_length=255, null=True, blank=True)
+    video_thumbnail_high = models.CharField(default='',max_length=255, null=True, blank=True)
+    video_thumbnail_standard = models.CharField(default='',max_length=255, null=True, blank=True)
     videos = models.ManyToManyField(YoutubeVideo)
     timestamp = models.DateTimeField(default=now)
     def __str__(self) -> str:
@@ -222,11 +224,22 @@ class Singleton(models.Model):
 
 class Configuration(Singleton):
     name = "Django Configurations"
+    # Site Info
     site_name = models.CharField(default='Cool Developer',max_length=255,help_text='SITE NAME')
     site_domain = models.CharField(default=siteName,max_length=255,help_text='SITE DOMAIN NAME')
     contact_email = models.EmailField(default=contactEmail, help_text='CONTACT EMAIL ADDRESS')
     result_per_page = models.IntegerField(default=9, help_text='Configure how many query result you want to show in each page ')
+    # Site Description
+    site_description = models.TextField(default='',blank=True,null=True)
+    typed_strings = models.TextField(default="hi",blank=True,null=True,help_text="Use comma separated Typed JS string values")
+    # Home Page Set Up
+    welcome_text = models.CharField(default='Welcome to Cool Developer',max_length=255,help_text='Set Up your welcome title')
+    welcome_image_1 = models.FileField(default='',upload_to='home/image/%Y/%m/%d', validators=[FileExtensionValidator(['jpg', 'png', 'svg'])],null=True,blank=True)
+    welcome_image_2 = models.FileField(default='',upload_to='home/image/%Y/%m/%d', validators=[FileExtensionValidator(['jpg', 'png', 'svg'])],null=True,blank=True)
+    banner = models.FileField(default='',upload_to='home/image/%Y/%m/%d', validators=[FileExtensionValidator(['jpg', 'png', 'svg'])],null=True,blank=True)
+    # API Keys
     youtube_api_key = models.CharField(null=True,blank=True,max_length=255,help_text="Your Youtube API key")
+    # Social Media Username
     instagram = models.CharField(null=True,blank=True,max_length=255,help_text="Your Instagram username")
     github = models.CharField(null=True,blank=True,max_length=255,help_text="Your Github username")
     linkedIn = models.CharField(null=True,blank=True,max_length=255,help_text="Your LinkedIn username")

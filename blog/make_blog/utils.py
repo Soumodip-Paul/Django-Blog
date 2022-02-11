@@ -20,6 +20,24 @@ class Pages:
         self.pages =pages
         self.p = p  
 
+class __Thumbnails :
+    default = ''
+    standard = ''
+    high = ''
+    medium = ''
+    title = ''
+    description = ''
+    publishedAt = None
+    def __init__(self,snippet = None) -> None:
+        if snippet == None or len(snippet) == 0 : return
+        self.title = snippet['title'] if snippet.get('title') is not None else 'Video Title'
+        self.description = snippet['description'] if snippet.get('description') is not None else ''
+        self.default = snippet['thumbnails']['default']['url'] if snippet['thumbnails'].get('default') is not None else ''
+        self.standard = snippet['thumbnails']['standard']['url'] if snippet['thumbnails'].get('standard') is not None else ''
+        self.high = snippet['thumbnails']['high']['url'] if snippet['thumbnails'].get('high') is not None else ''
+        self.medium = snippet['thumbnails']['medium']['url'] if snippet['thumbnails'].get('medium') is not None else ''
+        self.publishedAt = snippet.get('publishedAt')[:-1] + '+00:00' if snippet.get('publishedAt') is not None else None
+
 class InternalServerError(HttpResponse):
     status_code = 500
     def __init__(self, content: object = ..., *args, **kwargs) -> None:
@@ -80,7 +98,9 @@ def prettyFilter(blogs):
         blog.blog_content = BeautifulSoup(blog.blog_content,"html.parser").get_text()
     return blogs
       
-def paginateResults(req: HttpRequest, filter_list, ResultPerPage:int, Redirect:str) -> Pages:
+def paginateResults(req: HttpRequest, filter_list, Redirect:str) -> Pages:
+    from .config import config as CONFIG
+    ResultPerPage:int = CONFIG.result_per_page
     pages = ceil(len(filter_list) / ResultPerPage)
     p = int(req.GET.get('p') or 1)
     if pages > 0 and p > pages or p < 1: return redirect(Redirect)
@@ -134,45 +154,48 @@ def getPlayListdata(obj : YoutubeCoursePlayList, req: HttpRequest = None):
     data = response.json()['items'][0]
     data2 = response2.json()['items']
     obj_data = data['snippet']
-    obj.course_title = obj_data['title']
-    obj.course_description = obj_data['description']
-    obj.video_thumbnail_default = obj_data['thumbnails']['default']['url']
-    obj.video_thumbnail_medium = obj_data['thumbnails']['medium']['url']
-    obj.video_thumbnail_high = obj_data['thumbnails']['high']['url']
-    obj.video_thumbnail_standard = obj_data['thumbnails']['standard']['url']
+    thumbnail_playlist = __Thumbnails(snippet=obj_data)
+    obj.course_title = thumbnail_playlist.title
+    obj.course_description = thumbnail_playlist.description
+    obj.video_thumbnail_default = thumbnail_playlist.default
+    obj.video_thumbnail_medium = thumbnail_playlist.medium
+    obj.video_thumbnail_high = thumbnail_playlist.high
+    obj.video_thumbnail_standard = thumbnail_playlist.standard
+    if thumbnail_playlist.publishedAt is not None : obj.timestamp = datetime.fromisoformat(thumbnail_playlist.publishedAt)
     obj.save()
     for item in data2:
         snippet = item['snippet']
         object = YoutubeVideo.objects.get_or_create(video_id=snippet['resourceId']['videoId'])
         video : YoutubeVideo = object[0]
-        print(snippet,video,)
-        # video.video_id = snippet['resourceId']['videoId']
-        video.video_title = snippet['title']
-        video.video_description = snippet['description'] 
-        video.video_thumbnail_default = snippet['thumbnails']['default']['url']
-        video.video_thumbnail_high = snippet['thumbnails']['high']['url']
-        video.video_thumbnail_medium = snippet['thumbnails']['medium']['url']
-        video.video_thumbnail_standard = snippet['thumbnails']['standard']['url']
+        thumbnails = __Thumbnails(snippet)
+        video.video_title = thumbnails.title
+        video.video_description = thumbnails.description
+        video.video_thumbnail_default = thumbnails.default
+        video.video_thumbnail_high = thumbnails.high
+        video.video_thumbnail_medium = thumbnails.medium
+        video.video_thumbnail_standard = thumbnails.standard
+        if thumbnails.publishedAt is not None : video.timestamp = datetime.fromisoformat(thumbnails.publishedAt)
         video.save()
         obj.videos.add(video)
     obj.save()
 
-def getYoutubeVideoData(obj : YoutubeVideo, req: HttpRequest = None):
+def getYoutubeVideoData(video : YoutubeVideo, req: HttpRequest = None):
     from .config import config as CONFIG
     if (CONFIG.youtube_api_key == None or len(CONFIG.youtube_api_key) == 0): 
         if (req != None) : messages.warning(req, 'No Api Key')
         return
-    video_id = obj.video_id
+    video_id = video.video_id
     response = requests.get(url="https://youtube.googleapis.com/youtube/v3/videos?part=snippet&id={id}&key={api_key}".format(id=video_id,api_key=CONFIG.youtube_api_key))
     if response.status_code != 200 : 
         if (req != None) : messages.warning(req, 'Forbidden')
         return 
-    obj_data = response.json()['items'][0]['snippet']
-    obj.video_title = obj_data['title']
-    obj.video_description = obj_data['description']
-    obj.video_thumbnail_default = obj_data['thumbnails']['default']['url']
-    obj.video_thumbnail_medium = obj_data['thumbnails']['medium']['url']
-    obj.video_thumbnail_high = obj_data['thumbnails']['high']['url']
-    obj.video_thumbnail_standard = obj_data['thumbnails']['standard']['url']
-    obj.save()
+    thumbnails = __Thumbnails(response.json()['items'][0]['snippet'])
+    video.video_title = thumbnails.title
+    video.video_description = thumbnails.description
+    video.video_thumbnail_default = thumbnails.default
+    video.video_thumbnail_high = thumbnails.high
+    video.video_thumbnail_medium = thumbnails.medium
+    video.video_thumbnail_standard = thumbnails.standard
+    if thumbnails.publishedAt is not None : video.timestamp = datetime.fromisoformat(thumbnails.publishedAt)
+    video.save()
     return

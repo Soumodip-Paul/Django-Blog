@@ -1,10 +1,16 @@
 window.onload = e => {
+    let thumbnail = ''
     document.querySelectorAll('.readonly').forEach( (el , key, parent) => {
         if (validateUrl(el.innerText)) {
             let url = el.innerText;
+            if (thumbnail === '' && url !== '' ) thumbnail = url
             el.innerHTML = `<a target="_blank" rel="noopener noreferrer"  href='${url}'>${url}</a>`
         }
     })
+    let img = document.createElement('img')
+    img.src = thumbnail
+    img.atl = "Thumbnail Image"
+    document.getElementById('content-main').prepend(img)
 }
 
 function validateUrl(value) {

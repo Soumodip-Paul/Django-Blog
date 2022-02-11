@@ -10,7 +10,7 @@
 			let thisForm = this;
 
 			let action = thisForm.getAttribute('action');
-			console.log(action)
+			// console.log(action)
 			let recaptcha = thisForm.getAttribute('data-recaptcha-site-key');
 
 			if (!action) {

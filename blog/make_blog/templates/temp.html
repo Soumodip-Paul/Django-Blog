@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta content="width=device-width, initial-scale=1.0" name="viewport">
-	<title>{% block title %}{% endblock %} - Cool Developer Blog</title>
+	<title>{% block title %}{% endblock %} - {{config.site_name}}</title>
 	<meta content="{% block desc %}{% endblock %}" name="description">
 	<meta content="{% block keyword %}{% endblock %}" name="keywords">
 	<!-- Favicons -->
@@ -93,12 +93,12 @@
 		<div class="container">
 			<div class="row">
 				<div class="col-md-4 mb-4 mb-md-0">
+					{% if config.site_description|length != 0 %}
 					<h3>About US</h3>
 					<p>
-						Cool Developer is a free learning platform for coders.Learn all of the modern
-						web development technologies like like React JS, Django , Flusk, Angular JS,
-						Node JS , Mongo DB, SQLite Database and Android Development for absolutely free.
+						{{config.site_description}}
 					</p>
+					{% endif %}
 					<p class="social">
 						{% if config.twitter|length > 0 %}<a target="_blank" rel="noopener noreferrer" href="https://twitter.com/{{config.twitter}}"><span
 								class="bi bi-twitter"></span><span class="visually-hidden">go to</span></a>{% endif %}
@@ -118,10 +118,10 @@
 						<div class="col-md-4 mb-4 mb-md-0">
 							<h3>Navigation</h3>
 							<ul class="list-unstyled">
+								<li><a href="/courses">Courses</a></li>
 								<li><a href="/pricing">Pricing</a></li>
 								<li><a href="/features">Features</a></li>
 								<li><a href="/blog">Blog</a></li>
-								<li><a href="/contact">Contact</a></li>
 							</ul>
 						</div>
 						<div class="col-md-4 mb-4 mb-md-0">
@@ -130,7 +130,7 @@
 								<li><a href="#">Team</a></li>
 								<li><a href="/privacy">Privacy Policy</a></li>
 								<li><a href="/terms-and-condition">Terms and Conditions</a></li>
-								<!-- <li><a href="#">Events</a></li> -->
+								<li><a href="/contact">Contact</a></li>
 							</ul>
 						</div>
 						<div class="col-md-4 mb-4 mb-md-0">
@@ -145,7 +145,7 @@
 			</div>
 			<div class="row justify-content-center text-center">
 				<div class="col-md-7">
-					<p class="copyright">&copy; Copyright Cool Developer Inc. All Rights Reserved</p>
+					<p class="copyright">&copy; Copyright {{config.site_name}} Inc. All Rights Reserved</p>
 					<div class="credits ">
 						UI Credit <a href="https://bootstrapmade.com/">BootstrapMade</a>
 					</div>

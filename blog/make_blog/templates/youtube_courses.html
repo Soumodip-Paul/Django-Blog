@@ -45,14 +45,14 @@ Explore Our Courses
 				{% for course in courses %}
 				<div class="col-md-4">
 					<div class="post-entry">
-						<a href="/course/{{course.playlist_id}}" class="d-block mb-4">
+						<a href="/courses/{{course.playlist_id}}" class="d-block mb-4">
 							<img src="{{course.video_thumbnail_high}}" alt="Image" class="img-fluid">
 						</a>
 						<div class="post-text">
-							<span class="post-meta">{{course.timestamp}} {% if course.course_author is not None %}&bullet; By <a href="#">{{course.course_author.get_full_name}}</a> {% endif %}</span>
-							<h3><a href="/course/{{course.playlist_id}}">{{course.course_title}}</a></h3>
+							<span class="post-meta">{{course.timestamp}} {% if course.course_author is not None %}&bullet; By <a href="/user/{{course.course_author}}">{{course.course_author.get_full_name}}</a> {% endif %}</span>
+							<h3><a href="/courses/{{course.playlist_id}}">{{course.course_title}}</a></h3>
 							<p>{{course.course_description|truncatewords:25}}</p>
-							<p><a href="/course/{{course.playlist_id}}" class="readmore">Read more</a></p>
+							<p><a href="/courses/{{course.playlist_id}}" class="readmore">Read more</a></p>
 						</div>
 					</div>
 				</div>
@@ -63,7 +63,7 @@ Explore Our Courses
 				{% endfor %}
 			</div>
 			{% else %}
-			<h4 class="lead mb-5">No Course posts available now</h4>
+			<h4 class="lead mb-5" style="text-transform: capitalize;">No Courses are available now</h4>
 			{% endif %}
 			{% for page in pages %}
 			{% if forloop.counter == 1 %}

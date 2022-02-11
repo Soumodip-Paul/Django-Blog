@@ -1,4 +1,3 @@
-from pickle import TRUE
 from django.contrib import admin
 from django.db import OperationalError
 from django.http.request import HttpRequest
@@ -12,6 +11,8 @@ try:
 except Configuration.DoesNotExist as e:
     site_name = "Cool Developer"
 except OperationalError as e:
+    site_name = "Cool Developer"
+except Exception as e:
     site_name = "Cool Developer"
 
 def registerPanel(site_name) :
@@ -34,6 +35,7 @@ def withdrawContent(modeladmin, request: HttpRequest, queryset):
 # Register your models here.
 @admin.register(BlogCategory)
 class BlogCategoryAdmin(ImportExportMixin,admin.ModelAdmin):
+    date_hierarchy = 'date'
     list_display = ["id","category_name","category_url","date"]
     list_display_links = ["id",]
     search_fields = ["id","category_name","category_url","date"]
@@ -76,6 +78,7 @@ class BlogAdmin(ImportExportMixin,admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
+    date_hierarchy = 'timestamp'
     list_display = ['id', 'user', 'timestamp']
     search_fields = ['id', 'user__username','user__first_name', 'user__last_name','user__email', 'timestamp',]
     def has_change_permission(self, request: HttpRequest, obj = ...) -> bool:
@@ -87,6 +90,7 @@ class CommentAdmin(admin.ModelAdmin):
 
 @admin.register(ContactClass)
 class ContactModel(admin.ModelAdmin):
+    date_hierarchy = 'date'
     list_display = ["query_id","customer_email","query_subject","query_resolved","date"]
     list_display_links = ["query_id","customer_email"]
     list_filter = ['query_resolved','date']
@@ -96,6 +100,7 @@ class ContactModel(admin.ModelAdmin):
 
 @admin.register(Feature)
 class FeatureAdmin(admin.ModelAdmin):
+    date_hierarchy = 'timestamp'
     list_display = ['id','feature_name','timestamp']
     list_display_links = ["id",]
     search_fields = ["feature_name","feature_image", "feature_details","timestamp",]
@@ -108,11 +113,15 @@ class FeatureAdmin(admin.ModelAdmin):
 
 @admin.register(Image)
 class ImageAdmin(admin.ModelAdmin):
+    date_hierarchy = 'timestamp'
     list_display = ['image_id', 'image','timestamp']
     search_fields = ['image_id', 'image','timestamp']
+    class Media:
+        js = ['js/show-image.js']
 
 @admin.register(PaymentDetail)
 class PaymentDetailsAdmin(ImportExportMixin,admin.ModelAdmin):
+    date_hierarchy = 'TXNDATE'
     list_display = ['id', 'ORDERID' , 'TXNAMOUNT', 'TXNDATE']
     list_display_links = ['id','ORDERID']
     list_filter = ['STATUS','TXNDATE']
@@ -139,6 +148,7 @@ class PriceAdmin(admin.ModelAdmin):
 
 @admin.register(PrivacyPolicy)
 class PrivacyAdmin(admin.ModelAdmin):
+    date_hierarchy = 'timestamp'
     list_display = ['id','timestamp']
     search_fields = ['timestamp']
     class Media:
@@ -149,6 +159,7 @@ class PrivacyAdmin(admin.ModelAdmin):
 
 @admin.register(TransctionDetail)
 class TransactionAdmin(ImportExportMixin,admin.ModelAdmin):
+    date_hierarchy = 'timestamp'
     list_display = ['order_id','user','amount','timestamp']
     search_fields= ['order_id','user__username','user__first_name', 'user__last_name','user__email','timestamp','status']
     list_filter = ['status','timestamp']
@@ -159,6 +170,7 @@ class TransactionAdmin(ImportExportMixin,admin.ModelAdmin):
 
 @admin.register(TermsAndCondition)
 class TermsAdmin(admin.ModelAdmin):
+    date_hierarchy = 'timestamp'
     list_display = ['id','timestamp']
     search_fields = ['timestamp']
     class Media:
@@ -174,14 +186,17 @@ class UserModelClass(admin.ModelAdmin):
     search_fields = ['id','user__username','user__first_name', 'user__last_name','user__email']
     list_filter = ['testimonial','star_ratings',]
     raw_id_fields = ['user','membership']
-    readonly_fields = ['avatar_image','about','ratings','rating_title','star_ratings',]
+    readonly_fields = ['avatar_image','about','ratings','rating_title','star_ratings','followers']
 
 @admin.register(YoutubeVideo)
 class YoutubeVideoAdmin(admin.ModelAdmin):
+    date_hierarchy = 'timestamp'
     list_display = ['video_id','video_title',]
+    ordering = ['-timestamp']
     list_display_links = ['video_id', ]
+    list_filter = ['timestamp']
     search_fields = ['video_id']
-    readonly_fields = ['video_title', 'video_description', 'video_thumbnail_default', 'video_thumbnail_medium', 'video_thumbnail_high', 'video_thumbnail_standard',]
+    readonly_fields = ['video_title', 'video_description', 'video_thumbnail_default', 'video_thumbnail_medium', 'video_thumbnail_high', 'video_thumbnail_standard', 'timestamp']
     def save_model(self, request, obj, form, change) -> None:
         getYoutubeVideoData(obj,request)
         return super().save_model(request, obj, form, change)
@@ -203,7 +218,8 @@ class YoutubeCourseAdmin(admin.ModelAdmin):
     def has_change_permission(self, request: HttpRequest, obj = ...) -> bool:
         from .config import config as CONFIG
         return CONFIG.youtube_api_key != None and len(CONFIG.youtube_api_key) != 0
-    def save_model(self, request, obj, form, change) -> None:
+    def save_model(self, request: HttpRequest, obj:YoutubeCoursePlayList, form, change) -> None:
+        if obj.course_author == None : obj.course_author = request.user
         getPlayListdata(obj,request)
         return super().save_model(request, obj, form, change)
     def delete_model(self, request: HttpRequest, obj: YoutubeCoursePlayList) -> None:
@@ -219,14 +235,20 @@ class SettingConfig(ImportExportMixin,admin.ModelAdmin):
     list_display = ['name','site_name','site_domain']
     fieldsets = (
         ("Site Info" , {
-            "fields" : ('site_name','site_domain', 'result_per_page')
+            "fields" : ('site_name','site_domain', 'result_per_page', 'contact_email')
         }),
         ("Api Key", {
             "fields" : ('youtube_api_key',)
         }),
         ("Social Links", {
             "fields" : ('instagram','github','youtube','linkedIn','twitter')
-        })
+        }),
+        ("Basic Details", {
+            "fields" : ('site_description','typed_strings')
+        }),
+        ("Home page Set Up", {
+            "fields" : ('welcome_text','banner','welcome_image_1','welcome_image_2')
+        }),    
     )
     def save_model(self, request, obj, form, change) -> None:
         from . import config
@@ -239,5 +261,8 @@ class SettingConfig(ImportExportMixin,admin.ModelAdmin):
         return False
     class Media:
         js = ["js/settingConfig.js"]
+        css = {
+            "all" : ("css/admin/config_admin.css",)
+        }
 
 registerPanel(site_name)
