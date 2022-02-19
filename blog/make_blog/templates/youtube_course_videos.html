@@ -1,8 +1,8 @@
 {% extends 'temp.html' %}
-{% block desc %}{{blog_desc|truncatewords:30}}{% endblock %}
+{% block desc %}{{playlist.course_description|truncatewords:30}}{% endblock %}
 {% block style %}
 <link rel="stylesheet" href="/assets/css/prism.css">{% endblock %}
-{% block title %}{{blog.blog_title}} - {{blog.blog_author.get_full_name}}{% endblock %}
+{% block title %}{{playlist.course_title}} - {{playlist.course_author.get_full_name}}{% endblock %}
 {% block blog_active %}active{% endblock %}
 {% block main %}
 <main id="main">
@@ -23,15 +23,15 @@
 			</svg>
 
 		</div>
-
+        {% load templates %}
 		<div class="container">
 			<div class="row align-items-center">
 				<div class="col-12">
 					<div class="row justify-content-center">
 						<div class="col-md-10 text-center hero-text">
-							<h1 data-aos="fade-up" data-aos-delay="">{{blog.blog_title}}</h1>
-							<p class="mb-5" data-aos="fade-up" data-aos-delay="100">{{blog.blog_date}} &bullet; By <a
-									href="/user/{{blog.blog_author}}" class="text-white text-capitalize">{{blog.blog_author.get_full_name}}</a></p>
+							<h1 data-aos="fade-up" data-aos-delay="">{{playlist.course_title}}</h1>
+							<p class="mb-5" data-aos="fade-up" data-aos-delay="100">{{playlist.timestamp|formatdate}} &bullet; By <a
+									href="/user/{{playlist.course_author}}" class="text-white text-capitalize">{{playlist.course_author.get_full_name}}</a></p>
 						</div>
 					</div>
 				</div>
@@ -44,8 +44,12 @@
 		<div class="container">
 			<div class="row">
 				<div class="col-md-8 blog-content text-dark">
-					<p class="lead mb-5">{{blog_desc|truncatewords:20}}</p>
-					{{blog.blog_content|safe}}
+					<p class="lead mb-5">
+						{% if playlist.course_description|length == 0 %}
+						<em>No Description Available</em>
+						{% else %}
+						{{playlist.course_description}}
+						{%endif%}</p>
 					<div class="pt-5">
 						<p>
 							{% for category in blog.blog_category.all %}
@@ -185,12 +189,12 @@
 					{% endif %}
 					{% endfor %}
 					<div class="sidebar-box">
-						<img src="{% if profileImage != None and profileImage != '' %}/media/{{profileImage}}{% else %}/assets/img/person_1.jpg{% endif %}"
+						<img src="{% if author != None and author.avatar_image != None and author.avatar_image != '' %}/media/{{author.avatar_image}}{% else %}/assets/img/person_1.jpg{% endif %}"
 							alt="Image placeholder" width="512" height="auto" class="img-fluid mb-4">
 						<h3>About The Author</h3>
-						{% if about_author|length != 0 %}
+						{% if author is not None and author.about|length != 0 %}
 						<p>
-						{{about_author|truncatewords:25}}
+						{{author.about|truncatewords:25}}
 						</p>
 						<p><a href="/user/{{blog.blog_author.username}}" class="btn btn-primary btn-sm">Read More</a></p>
 						{% else %}
@@ -201,7 +205,7 @@
 					<div class="sidebar-box">
 						<h3>Support Us</h3>
 						<script src="https://apis.google.com/js/platform.js"></script>
-						<div class="g-ytsubscribe" data-channelid="UCOFwfN-LJ7wGvAOovAwpjxg" data-layout="full" data-count="hidden"></div>
+						<div class="g-ytsubscribe" data-channelid="{{config.youtube}}" data-layout="full" data-count="hidden"></div>
 					</div>
 					{% endif %}
 				</div>
@@ -215,4 +219,5 @@
 </main>
 {% endblock %}
 {% block script %}
-<script src="/assets/js/prism.js"></script> {% endblock %}
+<script src="/assets/js/prism.js"></script> 
+{% endblock %}

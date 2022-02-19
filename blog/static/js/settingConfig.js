@@ -1,3 +1,4 @@
 window.onload = e => {
-    document.querySelector("#id_youtube_api_key").type='password'
+    const elem = document.querySelector("#id_youtube_api_key")
+    if(!!elem) elem.type='password'
 }

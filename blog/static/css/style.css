@@ -911,6 +911,11 @@ section {
   font-size: 14px;
 }
 
+.social {
+  display: flex;
+  justify-content: space-around;
+}
+
 .social a {
   display: inline-block;
   width: 50px;

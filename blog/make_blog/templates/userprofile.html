@@ -2,7 +2,7 @@
 {% block desc %}
 {% endblock %}
 {% block title %}
-Welcome to django blog
+Profile - {{userModel.user.get_full_name|title}}
 {% endblock %}
 {% block blog_profile %}active{% endblock %}
 {% block style %}
@@ -152,15 +152,18 @@ Welcome to django blog
                                     <label for="user_email">Email address</label>
                                 </div>
                             </div>
-                            {% if user.username != id and req.user is not None %}
                             <div class="col-md-6 form-group d-flex mt-3">
+                                {% if not user.is_anonymous and user.username != id %}
                                 <form role="form" method="post" action="/user/{{userModel.user}}/follow" onsubmit="submitForm(event);">
                                     {% csrf_token %}
                                     <input type="hidden" value=".">
                                     <button class="btn btn-primary" type="submit" id="followBtn">{% if following %}Following{% else %} Follow {% endif %}</button>
                                 </form>
+                                {% elif user.username == id %}
+                                {% else %}
+                                <button class="btn btn-primary" onclick="showAlert('Sign Up or Login',`<div class='text-center'>Signup or Login to <em>Follow</em> <strong>{{userModel.user.get_full_name|title}}</strong> <br/> <a class='btn btn-sm my-2 mx-2 w-100 btn-success' href='/signup'>Sign Up</a> <br /> <a class='btn btn-sm my-2 mx-2 w-100 btn-success' href='/login'>Login</a></div>`)" id="followBtn">Follow</button>
+                                {% endif %}
                             </div>
-                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -222,7 +225,7 @@ Welcome to django blog
 
 {% endblock %}
 {% block script %}
-{% if user.username != id and req.user is not None %}
+{% if user is not None and user.username != id %}
 <script>
     async function submitForm(e){
         e.preventDefault()

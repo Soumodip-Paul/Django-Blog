@@ -7,6 +7,7 @@ window.onload = e => {
             el.innerHTML = `<a target="_blank" rel="noopener noreferrer"  href='${url}'>${url}</a>`
         }
     })
+    if (!navigator.onLine) return
     let img = document.createElement('img')
     img.src = thumbnail
     img.atl = "Thumbnail Image"

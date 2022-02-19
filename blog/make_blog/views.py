@@ -1,4 +1,3 @@
-from audioop import add
 from blog.settings import BASE_DIR
 from bs4 import BeautifulSoup
 from django.contrib.auth.models import User
@@ -138,8 +137,18 @@ def courses(req: HttpRequest):
         courses.append(course)
     return render(req,'youtube_courses.html', {'courses': courses, 'pages': range(resultPage.pages), 'p': resultPage.p})
 
-def coursesData(req: HttpRequest, id: str): 
-    return HttpResponse(id)
+def coursesData(req: HttpRequest, id: str):
+    try: 
+        playlist: YoutubeCoursePlayList = YoutubeCoursePlayList.objects.get(playlist_id=id)
+        try: 
+            userModel : UserModel = UserModel.objects.get(user = playlist.course_author)
+        except UserModel.DoesNotExist as e:
+            userModel : UserModel = None
+        return render(req,'youtube_course_videos.html',{ 'playlist' : playlist, 'author': userModel })
+    except YoutubeCoursePlayList.DoesNotExist as e:
+        raise Http404()
+    except Exception as e:
+        return InternalServerError(e)
 
 def features(req: HttpRequest):
     try:
@@ -167,6 +176,12 @@ def favicon(req: HttpRequest):
         
         # sending response 
         # response = HttpResponse(file_data, content_type='image/x-icon')
+        config: Configuration = Configuration.load()
+        favIcon = config.icon
+        if (favIcon is None or len(favIcon) == 0  ): 
+            response = FileResponse(open(file_location,'rb'))
+        else: response = FileResponse(open(BASE_DIR / 'media' / str(favIcon),'rb'))
+    except ValueError as e:
         response = FileResponse(open(file_location,'rb'))
     except IOError:
         # handle file not exist case here

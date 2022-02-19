@@ -51,7 +51,13 @@ Explore Our Courses
 						<div class="post-text">
 							<span class="post-meta">{{course.timestamp}} {% if course.course_author is not None %}&bullet; By <a href="/user/{{course.course_author}}">{{course.course_author.get_full_name}}</a> {% endif %}</span>
 							<h3><a href="/courses/{{course.playlist_id}}">{{course.course_title}}</a></h3>
-							<p>{{course.course_description|truncatewords:25}}</p>
+							<p>
+								{% if course.course_description|length == 0 %}
+								<em>No Description Available</em>
+								{% else %}
+								{{course.course_description|truncatewords:30}}
+								{%endif%}
+							</p>
 							<p><a href="/courses/{{course.playlist_id}}" class="readmore">Read more</a></p>
 						</div>
 					</div>

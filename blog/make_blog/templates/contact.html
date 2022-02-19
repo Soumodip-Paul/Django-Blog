@@ -50,18 +50,24 @@ Welcome to django blog
         <div class="row">
           <div class="col-md-4 ms-auto order-2" data-aos="fade-up">
             <ul class="list-unstyled">
+              {% if config.address|length != 0 %}
               <li class="mb-3">
                 <strong class="d-block mb-1">Address</strong>
-                <span>Raja SC Mallik Road, Jadavpur, Kolkata, West Bengal, India Pin -700032</span>
+                <span>{{config.address|title}}</span>
               </li>
+              {% endif %}
+              {% if config.contact_number|length != 0 %}
               <li class="mb-3">
                 <strong class="d-block mb-1">Phone</strong>
-                <span>+1 232 3235 324</span>
+                <span>{{config.contact_number}}</span>
               </li>
+              {% endif %}
+              {% if config.contact_email|length != 0 %}
               <li class="mb-3">
                 <strong class="d-block mb-1">Email</strong>
-                <span><a href="mailto:support@cooldeveloper.com">support@cooldeveloper.com</a></span>
+                <span><a href="mailto:{{config.contact_email}}">{{config.contact_email}}</a></span>
               </li>
+              {% endif %}
             </ul>
           </div>
 

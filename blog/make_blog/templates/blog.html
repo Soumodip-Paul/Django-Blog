@@ -1,8 +1,9 @@
 {% extends 'temp.html' %}
 {% block desc %}
+Explore our collections of blogs
 {% endblock %}
 {% block title %}
-Welcome to django blog
+Explore Our Blogs
 {% endblock %}
 {% block blog_active %}active{% endblock %}
 {% block main %}
@@ -65,6 +66,7 @@ Welcome to django blog
 			{% else %}
 			<h4 class="lead mb-5">No blog posts available now</h4>
 			{% endif %}
+			{% comment %}
 			<!-- <div class="row mb-5">
 				<div class="col-md-4">
 					<div class="post-entry">
@@ -147,6 +149,7 @@ Welcome to django blog
 				</div>
 
 			</div>-->
+			{% endcomment %}
 			{% for page in pages %}
 			{% if forloop.counter == 1 %}
 			<div class="row">

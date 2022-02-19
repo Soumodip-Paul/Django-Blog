@@ -227,8 +227,13 @@ class Configuration(Singleton):
     # Site Info
     site_name = models.CharField(default='Cool Developer',max_length=255,help_text='SITE NAME')
     site_domain = models.CharField(default=siteName,max_length=255,help_text='SITE DOMAIN NAME')
-    contact_email = models.EmailField(default=contactEmail, help_text='CONTACT EMAIL ADDRESS')
     result_per_page = models.IntegerField(default=9, help_text='Configure how many query result you want to show in each page ')
+    icon = models.FileField(default='',upload_to='icon/', help_text="Select a .ico Icon File",validators=[FileExtensionValidator(['ico'])],null=True,blank=True)
+    apple_touch_icon = models.FileField(default='',upload_to='icon/', help_text="Select a Apple Touch Icon File",validators=[FileExtensionValidator(['jpg', 'png', 'svg'])],null=True,blank=True)
+    # Address and Contact Details
+    address = models.TextField(default="",blank=True,null=True,help_text="Enter Your Full Address")
+    contact_email = models.EmailField(default=contactEmail, help_text='CONTACT EMAIL ADDRESS')
+    contact_number = models.CharField(default='',max_length=16,blank=True,null=True, help_text="Enter your phone number")
     # Site Description
     site_description = models.TextField(default='',blank=True,null=True)
     typed_strings = models.TextField(default="hi",blank=True,null=True,help_text="Use comma separated Typed JS string values")

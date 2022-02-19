@@ -27,7 +27,7 @@ function showAlert(title,text) {
     var myModal = new bootstrap.Modal(document.getElementById('alertModal'), {
         keyboard: false
     })
-    textElem.innerText = text
+    textElem.innerHTML = text
     heading.innerText = title
     myModal.toggle()
 }

@@ -187,6 +187,8 @@ class UserModelClass(admin.ModelAdmin):
     list_filter = ['testimonial','star_ratings',]
     raw_id_fields = ['user','membership']
     readonly_fields = ['avatar_image','about','ratings','rating_title','star_ratings','followers']
+    class Media:
+        js = ['js/userModelShowImage.js']
 
 @admin.register(YoutubeVideo)
 class YoutubeVideoAdmin(admin.ModelAdmin):
@@ -234,24 +236,37 @@ class SettingConfig(ImportExportMixin,admin.ModelAdmin):
     resource_class = SettingAdminResource
     list_display = ['name','site_name','site_domain']
     fieldsets = (
-        ("Site Info" , {
-            "fields" : ('site_name','site_domain', 'result_per_page', 'contact_email')
+        (None, {
+            "fields" : ('site_name','site_domain', 'result_per_page', 'icon', 'apple_touch_icon')
+        }),
+        ("Contact Details" , {
+            "fields" : ('contact_email', 'contact_number', 'address'),
+            'classes': ['collapse',]
         }),
         ("Api Key", {
-            "fields" : ('youtube_api_key',)
+            "fields" : ('youtube_api_key',),
+            'classes': ['collapse',]
         }),
         ("Social Links", {
-            "fields" : ('instagram','github','youtube','linkedIn','twitter')
+            "fields" : ('instagram','github','youtube','linkedIn','twitter'),
+            'classes': ['collapse',]
         }),
         ("Basic Details", {
-            "fields" : ('site_description','typed_strings')
+            "fields" : ('site_description','typed_strings'),
+            'classes': ['collapse',]
         }),
         ("Home page Set Up", {
-            "fields" : ('welcome_text','banner','welcome_image_1','welcome_image_2')
+            "fields" : ('welcome_text','banner','welcome_image_1','welcome_image_2'),
+            'classes': ['collapse',]
         }),    
     )
     def save_model(self, request, obj, form, change) -> None:
         from . import config
+        print(obj.icon)
+        if obj.icon is None or str(obj.icon) == '':
+            config.config.icon.delete()
+        if obj.apple_touch_icon is None or str(obj.apple_touch_icon) == '':
+            config.config.apple_touch_icon.delete()
         config.config = obj
         registerPanel(obj.site_name)
         return super().save_model(request, obj, form, change)
